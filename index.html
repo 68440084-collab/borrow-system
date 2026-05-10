@@ -274,24 +274,9 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
         <th style="width:15%">สถานะ</th>
       </tr></thead>
       <tbody id="status-body">
-        <tr>
-          <td>สมชาย ใจดี<br><span style="color:var(--mu);font-size:11px">6510001234 · ปี 2</span></td>
-          <td style="font-size:12px">รัฐศาสตร์ภาคปกติ</td><td>โปรเจกเตอร์</td><td>1</td>
-          <td>8 พ.ค. 2568<br><span style="color:var(--mu);font-size:11px">09:00 น.</span></td>
-          <td><span class="bg2 bok"><i class="ti ti-check"></i>คืนแล้ว</span></td>
-        </tr>
-        <tr>
-          <td>มินตรา พรหมศรี<br><span style="color:var(--mu);font-size:11px">6510002345 · ปี 3</span></td>
-          <td style="font-size:12px">การบริหารทั่วไปภาคปกติ</td><td>ไมโครโฟน</td><td>2</td>
-          <td>9 พ.ค. 2568<br><span style="color:var(--mu);font-size:11px">10:30 น.</span></td>
-          <td><span class="bg2 bwn"><i class="ti ti-clock"></i>กำลังยืม</span></td>
-        </tr>
-        <tr>
-          <td>ธนกร สุขสวัสดิ์<br><span style="color:var(--mu);font-size:11px">6510003456 · ปี 1</span></td>
-          <td style="font-size:12px">การบริหารท้องถิ่นภาคพิเศษ</td><td>กล้อง DSLR</td><td>1</td>
-          <td>9 พ.ค. 2568<br><span style="color:var(--mu);font-size:11px">13:00 น.</span></td>
-          <td><span class="bg2 brd"><i class="ti ti-clock-exclamation"></i>รอการอนุมัติ</span></td>
-        </tr>
+        <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--mu);font-size:14px">
+          <i class="ti ti-loader" style="font-size:22px;display:block;margin-bottom:6px"></i>กำลังโหลด...
+        </td></tr>
       </tbody>
     </table>
   </div>
@@ -522,4 +507,42 @@ ua.addEventListener('drop',e=>{
     previewProof({target:{files:[file]}});
   }
 });
+
+// ===== โหลดสถานะเรียลไทม์จาก Google Sheets =====
+async function loadStatus(){
+  const tb=document.getElementById('status-body');
+  try{
+    const res=await fetch(SHEET_URL+'?action=getAll');
+    const data=await res.json();
+    const rows=data.rows||[];
+    if(!rows.length){
+      tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--mu);font-size:14px"><i class="ti ti-inbox" style="font-size:22px;display:block;margin-bottom:6px"></i>ยังไม่มีรายการ</td></tr>';
+      return;
+    }
+    tb.innerHTML=rows.map(r=>{
+      const st=r.status||'รอการอนุมัติ';
+      const badgeCls=st==='อนุมัติ'?'bok':st==='คืนแล้ว'?'bin':st==='ปฏิเสธ'?'brd':'brd';
+      const icon=st==='อนุมัติ'?'ti-clock':st==='คืนแล้ว'?'ti-circle-check':st==='ปฏิเสธ'?'ti-x':'ti-clock-exclamation';
+      const yr=(r.year||'').replace('ชั้นปีที่ ','ปี ').replace(' ขึ้นไป','+');
+      return`<tr>
+        <td>${r.name||''}<br><span style="color:var(--mu);font-size:11px">${r.studentId||''} · ${yr}</span></td>
+        <td style="font-size:12px">${r.major||''}</td>
+        <td>${r.items||''}</td>
+        <td>${r.quantities||''}</td>
+        <td>${r.date||''}<br><span style="color:var(--mu);font-size:11px">${r.time||''} น.</span></td>
+        <td><span class="bg2 ${badgeCls}"><i class="ti ${icon}"></i>${st}</span></td>
+      </tr>`;
+    }).join('');
+  }catch(e){
+    tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:#c0392b;font-size:13px">⚠️ โหลดข้อมูลไม่ได้</td></tr>';
+  }
+}
+// โหลดเมื่อกดแท็บสถานะ
+document.querySelectorAll('.nt').forEach(btn=>{
+  if(btn.textContent.includes('สถานะ')) btn.addEventListener('click', loadStatus);
+});
+// รีเฟรชทุก 30 วินาที
+setInterval(()=>{
+  if(document.getElementById('panel-status')?.classList.contains('on')) loadStatus();
+},30000);
 </script>
