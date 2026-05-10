@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Admin — ระบบยืม-คืน</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&family=Noto+Serif+Thai:wght@700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --in:#3d3b8e;--in2:#4a48a8;--in3:#2d2b72;--in4:#1e1c58;--in5:#13114a;
+  --inl:#5f5dc0;--gold:#c9a435;--gold2:#ddb84a;--gold3:#f0d46a;
+  --bg:#f3f2fb;--wh:#fff;--tx:#1a1830;--mu:#5a5880;
+  --ok:#1a6b3a;--okb:#e4f5ec;--wn:#7a4f00;--wnb:#fff3cc;
+  --rd:#8b1a1a;--rdb:#fdeaea;--ib:#eae9f8;--it:#2d2b72;
+  --br:rgba(61,59,142,0.15);
+}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx)}
+.wrap{max-width:960px;margin:0 auto;padding:0 1rem 3rem}
+
+/* HEADER */
+.hdr{background:var(--in5);position:relative;overflow:hidden;margin-bottom:1.5rem}
+.hdr-bg{position:absolute;inset:0;
+  background-image:linear-gradient(45deg,rgba(201,164,53,.2) 1px,transparent 1px),linear-gradient(-45deg,rgba(201,164,53,.2) 1px,transparent 1px),
+    linear-gradient(45deg,transparent 50%,rgba(201,164,53,.04) 50%),linear-gradient(-45deg,transparent 50%,rgba(201,164,53,.04) 50%);
+  background-size:28px 28px,28px 28px,28px 28px,28px 28px}
+.hdr-ov{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(61,59,142,0) 40%,rgba(13,11,60,.55) 100%)}
+.hb{padding:1.2rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2}
+.hb-left{display:flex;align-items:center;gap:12px}
+.hadmin-badge{background:var(--gold);color:var(--in5);font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;letter-spacing:.5px}
+.htitle{font-family:'Noto Serif Thai',serif;font-size:18px;font-weight:700;color:#fff}
+.hsub{font-size:12px;color:rgba(240,212,106,.75);margin-top:2px}
+.hlock{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:6px 12px;font-size:12px;color:rgba(255,255,255,.7)}
+.hlock i{font-size:15px;color:var(--gold2)}
+.hr2{height:3px;background:var(--gold);position:relative;z-index:2}
+
+/* LOGIN SCREEN */
+.login-wrap{min-height:80vh;display:flex;align-items:center;justify-content:center}
+.login-box{background:var(--wh);border:1.5px solid var(--br);border-radius:16px;padding:2.5rem 2rem;width:100%;max-width:360px;text-align:center}
+.login-icon{width:64px;height:64px;border-radius:50%;background:var(--in);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+.login-icon i{font-size:28px;color:#fff}
+.login-box h2{font-size:18px;font-weight:700;color:var(--in3);margin-bottom:4px}
+.login-box p{font-size:13px;color:var(--mu);margin-bottom:1.5rem}
+.login-box input{width:100%;padding:10px 14px;border:1.5px solid var(--br);border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--tx);margin-bottom:10px;background:var(--bg)}
+.login-box input:focus{outline:none;border-color:var(--in)}
+.login-btn{width:100%;padding:11px;background:var(--in);color:#fff;font-family:'Sarabun',sans-serif;font-size:15px;font-weight:600;border:none;border-radius:8px;cursor:pointer;margin-top:4px}
+.login-btn:hover{background:var(--in2)}
+.login-err{font-size:13px;color:#c0392b;margin-top:8px;display:none}
+
+/* NAV TABS */
+.nav{display:flex;background:var(--in3);border-bottom:2.5px solid var(--gold);border-radius:0}
+.nt{flex:1;padding:12px 4px;font-size:13px;font-weight:500;color:rgba(255,255,255,.58);cursor:pointer;border:none;background:none;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px;border-bottom:3px solid transparent;margin-bottom:-2.5px}
+.nt:hover{color:#fff;background:rgba(255,255,255,.07)}
+.nt.on{color:var(--gold3);border-bottom-color:var(--gold);background:rgba(255,255,255,.06);font-weight:600}
+.nt i{font-size:17px}
+.pn{display:none;padding:1.3rem 0}
+.pn.on{display:block}
+
+/* SECTION TITLE */
+.st{font-size:15px;font-weight:600;color:var(--in);display:flex;align-items:center;gap:8px;margin-bottom:1rem}
+.sb{width:4px;height:20px;background:linear-gradient(to bottom,var(--gold),var(--in));border-radius:2px;flex-shrink:0}
+
+/* EQUIPMENT CARDS */
+.eq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:1.5rem}
+.eq-card{background:var(--wh);border:1.5px solid var(--br);border-radius:12px;padding:1rem 1.1rem;display:flex;align-items:center;gap:12px;position:relative}
+.eq-icon{width:44px;height:44px;border-radius:10px;background:var(--ib);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.eq-icon i{font-size:22px;color:var(--in)}
+.eq-info{flex:1}
+.eq-name{font-size:14px;font-weight:600;color:var(--tx)}
+.eq-count{font-size:12px;color:var(--mu);margin-top:2px}
+.eq-actions{display:flex;gap:6px}
+.btn-edit{padding:5px 10px;background:var(--ib);color:var(--in);border:1px solid var(--br);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif;display:flex;align-items:center;gap:4px}
+.btn-edit:hover{background:var(--in);color:#fff}
+.btn-del{padding:5px 10px;background:#fdeaea;color:#c0392b;border:1px solid rgba(192,57,43,.2);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif;display:flex;align-items:center;gap:4px}
+.btn-del:hover{background:#c0392b;color:#fff}
+
+/* ADD EQUIPMENT FORM */
+.add-box{background:var(--wh);border:1.5px dashed var(--in);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1.5rem}
+.add-box h3{font-size:14px;font-weight:600;color:var(--in3);margin-bottom:1rem;display:flex;align-items:center;gap:6px}
+.form-row{display:grid;grid-template-columns:1fr 1fr auto auto;gap:8px;align-items:end}
+.fi{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:12px;font-weight:500;color:var(--in3)}
+.fn{padding:9px 12px;border:1.5px solid var(--br);border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;background:var(--bg);color:var(--tx);transition:border-color .2s;width:100%}
+.fn:focus{outline:none;border-color:var(--in)}
+.btn-add{padding:9px 18px;background:var(--in);color:#fff;border:none;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;height:40px}
+.btn-add:hover{background:var(--in2)}
+.btn-save{padding:9px 18px;background:var(--ok);color:#fff;border:none;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;height:40px}
+.btn-save:hover{background:#155c30}
+
+/* ICON PICKER */
+.icon-select{padding:9px 12px;border:1.5px solid var(--br);border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;background:var(--bg);color:var(--tx);width:100%}
+
+/* REQUEST TABLE */
+.sw2{background:var(--wh);border:1px solid var(--br);border-radius:12px;overflow:auto;margin-bottom:1rem}
+.tb{width:100%;border-collapse:collapse;font-size:13px}
+.tb th{background:var(--in);color:#fff;padding:10px 12px;font-weight:500;font-size:12px;text-align:left;white-space:nowrap}
+.tb td{padding:10px 12px;border-bottom:.5px solid var(--br);color:var(--tx);vertical-align:middle}
+.tb tr:last-child td{border-bottom:none}
+.tb tr:hover td{background:#f4f3fc}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.b-wait{background:var(--rdb);color:var(--rd)}
+.b-ok{background:var(--okb);color:var(--ok)}
+.b-ret{background:var(--ib);color:var(--it)}
+.b-rej{background:#fff0f0;color:#a00}
+.btn-approve{padding:4px 10px;background:var(--okb);color:var(--ok);border:1px solid #b7e4c7;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif}
+.btn-approve:hover{background:var(--ok);color:#fff}
+.btn-reject{padding:4px 10px;background:var(--rdb);color:var(--rd);border:1px solid #f5b7b1;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif}
+.btn-reject:hover{background:#c0392b;color:#fff}
+.empty{text-align:center;padding:2.5rem;color:var(--mu);font-size:14px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--in5);color:#fff;padding:10px 22px;border-radius:30px;font-size:13px;font-weight:500;border:1px solid var(--gold);opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* EDIT MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:none;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--wh);border-radius:14px;padding:1.8rem;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,.2)}
+.modal h3{font-size:16px;font-weight:700;color:var(--in3);margin-bottom:1.2rem;display:flex;align-items:center;gap:8px}
+.modal .fi{margin-bottom:10px}
+.modal-actions{display:flex;gap:8px;margin-top:1.2rem}
+.modal-actions button{flex:1;padding:10px;border:none;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:600;cursor:pointer}
+.btn-cancel{background:var(--bg);color:var(--mu)}
+.btn-cancel:hover{background:#e0dff5}
+
+/* STAT CARDS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.4rem}
+.stat-card{background:var(--wh);border:1.5px solid var(--br);border-radius:12px;padding:1rem 1.1rem;display:flex;align-items:center;gap:12px}
+.stat-ic{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-ic i{font-size:20px}
+.stat-num{font-size:24px;font-weight:700;color:var(--in)}
+.stat-label{font-size:12px;color:var(--mu)}
+
+@media(max-width:600px){
+  .wrap{padding:0 .8rem 2rem}
+  .hb{padding:.9rem 1rem;flex-direction:column;align-items:flex-start;gap:8px}
+  .htitle{font-size:15px}
+  .hsub{font-size:11px}
+  .hlock{font-size:11px;padding:5px 10px}
+  .nav{overflow-x:auto}
+  .nt{font-size:11px;padding:10px 6px;min-width:80px}
+  .nt i{font-size:15px}
+  .pn{padding:1rem 0}
+  .form-row{grid-template-columns:1fr 1fr;gap:8px}
+  .btn-add{padding:8px 12px;font-size:13px}
+  .stats{grid-template-columns:1fr 1fr}
+  .eq-grid{grid-template-columns:1fr}
+  .eq-card{padding:.8rem}
+  .sw2{font-size:12px}
+  .tb th,.tb td{padding:7px 8px;font-size:11px}
+  .modal{margin:1rem;padding:1.3rem}
+  .login-box{padding:1.8rem 1.3rem}
+}
+@media(min-width:601px) and (max-width:860px){
+  .wrap{padding:0 1rem 2rem}
+  .eq-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-bg"></div>
+  <div class="hdr-ov"></div>
+  <div class="hb">
+    <div class="hb-left">
+      <div>
+        <div class="hadmin-badge">🔐 Admin Panel</div>
+        <div class="htitle">จัดการระบบยืม-คืนอุปกรณ์</div>
+        <div class="hsub">คณะรัฐศาสตร์ มหาวิทยาลัยบูรพา</div>
+      </div>
+    </div>
+    <div class="hlock" id="logout-btn" style="cursor:pointer" onclick="logout()">
+      <i class="ti ti-logout"></i> ออกจากระบบ
+    </div>
+  </div>
+  <div class="hr2"></div>
+</header>
+
+<div class="wrap">
+
+  <!-- LOGIN -->
+  <div class="login-wrap" id="login-screen">
+    <div class="login-box">
+      <div class="login-icon"><i class="ti ti-shield-lock"></i></div>
+      <h2>เข้าสู่ระบบผู้ดูแล</h2>
+      <p>กรุณาใส่รหัสผ่านเพื่อเข้าใช้งาน Admin Panel</p>
+      <input type="password" id="pw-input" placeholder="รหัสผ่าน" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <button class="login-btn" onclick="doLogin()"><i class="ti ti-login" style="font-size:16px;vertical-align:-2px"></i> เข้าสู่ระบบ</button>
+      <div class="login-err" id="login-err">รหัสผ่านไม่ถูกต้อง</div>
+      <p style="font-size:11px;color:var(--mu);margin-top:14px">รหัสเริ่มต้น: <strong>admin1234</strong><br/>เปลี่ยนได้ในหน้าตั้งค่า</p>
+    </div>
+  </div>
+
+  <!-- MAIN (hidden until login) -->
+  <div id="main-panel" style="display:none">
+
+    <nav class="nav">
+      <button class="nt on" onclick="sw('eq')"><i class="ti ti-package"></i>จัดการอุปกรณ์</button>
+      <button class="nt" onclick="sw('req')"><i class="ti ti-clipboard-list"></i>คำขอยืม</button>
+      <button class="nt" onclick="sw('settings')"><i class="ti ti-settings"></i>ตั้งค่า</button>
+    </nav>
+
+    <!-- TAB: อุปกรณ์ -->
+    <div class="pn on" id="panel-eq">
+      <div class="st"><div class="sb"></div>รายการอุปกรณ์ทั้งหมด</div>
+
+      <!-- ADD FORM -->
+      <div class="add-box">
+        <h3><i class="ti ti-plus" style="font-size:16px"></i> เพิ่มอุปกรณ์ใหม่</h3>
+        <div class="form-row">
+          <div class="fi">
+            <label class="fl">ชื่ออุปกรณ์</label>
+            <input class="fn" type="text" id="new-name" placeholder="เช่น ไมโครโฟนไร้สาย"/>
+          </div>
+          <div class="fi">
+            <label class="fl">ไอคอน</label>
+            <select class="fn icon-select" id="new-icon">
+              <option value="ti-device-projector">📽 โปรเจกเตอร์</option>
+              <option value="ti-microphone">🎤 ไมโครโฟน</option>
+              <option value="ti-camera">📷 กล้อง</option>
+              <option value="ti-speakerphone">🔊 ลำโพง</option>
+              <option value="ti-viewfinder">🎥 ขาตั้งกล้อง</option>
+              <option value="ti-flag">🚩 แบนเนอร์</option>
+              <option value="ti-device-laptop">💻 แล็ปท็อป</option>
+              <option value="ti-device-tv">📺 โทรทัศน์</option>
+              <option value="ti-plug">🔌 สายไฟ/อุปกรณ์ไฟฟ้า</option>
+              <option value="ti-table">🪑 โต๊ะ/เก้าอี้</option>
+              <option value="ti-device-audio">🎧 หูฟัง</option>
+              <option value="ti-printer">🖨 เครื่องพิมพ์</option>
+              <option value="ti-box">📦 อื่นๆ</option>
+            </select>
+          </div>
+          <div class="fi">
+            <label class="fl">จำนวนทั้งหมด</label>
+            <input class="fn" type="number" id="new-total" placeholder="0" min="1" style="width:90px"/>
+          </div>
+          <button class="btn-add" onclick="addEq()"><i class="ti ti-plus"></i>เพิ่ม</button>
+        </div>
+      </div>
+
+      <!-- EQUIPMENT GRID -->
+      <div class="eq-grid" id="eq-grid"></div>
+
+      <!-- SAVE BUTTON -->
+      <button class="btn-save" onclick="saveEq()" style="margin-top:.5rem">
+        <i class="ti ti-device-floppy"></i> บันทึกการเปลี่ยนแปลงทั้งหมด
+      </button>
+    </div>
+
+    <!-- TAB: คำขอยืม -->
+    <div class="pn" id="panel-req">
+      <div class="stats" id="stat-cards"></div>
+      <div class="st"><div class="sb"></div>รายการคำขอยืมอุปกรณ์</div>
+      <div class="sw2">
+        <table class="tb">
+          <thead><tr>
+            <th>ผู้ยืม</th>
+            <th>อุปกรณ์</th>
+            <th>จำนวน</th>
+            <th>วันที่/เวลา</th>
+            <th>ประเภท</th>
+            <th>สถานะ</th>
+            <th>ดำเนินการ</th>
+          </tr></thead>
+          <tbody id="req-body"><tr><td colspan="7" class="empty"><i class="ti ti-inbox" style="font-size:24px;display:block;margin-bottom:6px"></i>ยังไม่มีคำขอ</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: ตั้งค่า -->
+    <div class="pn" id="panel-settings">
+      <div class="st"><div class="sb"></div>ตั้งค่าระบบ</div>
+      <div style="background:var(--wh);border:1.5px solid var(--br);border-radius:12px;padding:1.4rem;max-width:420px">
+        <div class="fi" style="margin-bottom:1rem">
+          <label class="fl">เปลี่ยนรหัสผ่าน Admin</label>
+          <input class="fn" type="password" id="new-pw" placeholder="รหัสผ่านใหม่"/>
+        </div>
+        <div class="fi" style="margin-bottom:1.2rem">
+          <label class="fl">ยืนยันรหัสผ่านใหม่</label>
+          <input class="fn" type="password" id="new-pw2" placeholder="พิมพ์อีกครั้ง"/>
+        </div>
+        <button class="btn-save" onclick="changePw()" style="width:100%;justify-content:center">
+          <i class="ti ti-lock-check"></i> บันทึกรหัสผ่านใหม่
+        </button>
+        <div style="margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid var(--br)">
+          <p style="font-size:13px;color:var(--mu);margin-bottom:.8rem">ล้างข้อมูลคำขอทั้งหมด</p>
+          <button onclick="clearReqs()" style="padding:8px 16px;background:var(--rdb);color:var(--rd);border:1px solid #f5b7b1;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer">
+            <i class="ti ti-trash" style="font-size:14px;vertical-align:-2px"></i> ล้างประวัติคำขอ
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main-panel -->
+</div><!-- end wrap -->
+
+<!-- EDIT MODAL -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h3><i class="ti ti-pencil" style="font-size:18px"></i> แก้ไขอุปกรณ์</h3>
+    <input type="hidden" id="edit-id"/>
+    <div class="fi"><label class="fl">ชื่ออุปกรณ์</label><input class="fn" type="text" id="edit-name"/></div>
+    <div class="fi" style="margin-top:8px"><label class="fl">จำนวนทั้งหมด</label><input class="fn" type="number" id="edit-total" min="1"/></div>
+    <div class="fi" style="margin-top:8px">
+      <label class="fl">ไอคอน</label>
+      <select class="fn" id="edit-icon">
+        <option value="ti-device-projector">📽 โปรเจกเตอร์</option>
+        <option value="ti-microphone">🎤 ไมโครโฟน</option>
+        <option value="ti-camera">📷 กล้อง</option>
+        <option value="ti-speakerphone">🔊 ลำโพง</option>
+        <option value="ti-viewfinder">🎥 ขาตั้งกล้อง</option>
+        <option value="ti-flag">🚩 แบนเนอร์</option>
+        <option value="ti-device-laptop">💻 แล็ปท็อป</option>
+        <option value="ti-device-tv">📺 โทรทัศน์</option>
+        <option value="ti-plug">🔌 สายไฟ/อุปกรณ์ไฟฟ้า</option>
+        <option value="ti-table">🪑 โต๊ะ/เก้าอี้</option>
+        <option value="ti-device-audio">🎧 หูฟัง</option>
+        <option value="ti-printer">🖨 เครื่องพิมพ์</option>
+        <option value="ti-box">📦 อื่นๆ</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn-save" onclick="saveEdit()" style="flex:1"><i class="ti ti-check"></i> บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ========= GOOGLE SHEETS CONFIG =========
+const SHEET_URL = 'https://script.google.com/a/macros/go.buu.ac.th/s/AKfycbwmI-jsznrWfxpN2VHXQeMwxoiV1xzexmFqOPXAPdx8rt5BMfidQ0tZZJ8w2sRmcBUrag/exec';
+
+// ========= AUTH =========
+const ADMIN_PW_KEY = 'admin_pw';
+const DEFAULT_PW = 'admin1234';
+function getStoredPw(){ return localStorage.getItem(ADMIN_PW_KEY) || DEFAULT_PW; }
+
+function doLogin(){
+  const pw = document.getElementById('pw-input').value;
+  if(pw === getStoredPw()){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('main-panel').style.display='block';
+    document.getElementById('login-err').style.display='none';
+    loadAll();
+  } else {
+    document.getElementById('login-err').style.display='block';
+    document.getElementById('pw-input').value='';
+    document.getElementById('pw-input').focus();
+  }
+}
+function logout(){
+  if(confirm('ออกจากระบบ?')){
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('main-panel').style.display='none';
+    document.getElementById('pw-input').value='';
+  }
+}
+function changePw(){
+  const p1=document.getElementById('new-pw').value;
+  const p2=document.getElementById('new-pw2').value;
+  if(!p1){showToast('กรุณาใส่รหัสผ่านใหม่');return;}
+  if(p1!==p2){showToast('รหัสผ่านไม่ตรงกัน ❌');return;}
+  if(p1.length<6){showToast('รหัสผ่านต้องมีอย่างน้อย 6 ตัว');return;}
+  localStorage.setItem(ADMIN_PW_KEY,p1);
+  document.getElementById('new-pw').value='';
+  document.getElementById('new-pw2').value='';
+  showToast('เปลี่ยนรหัสผ่านเรียบร้อย ✅');
+}
+
+// ========= EQUIPMENT =========
+const EQ_KEY = 'eq_list';
+const EQ_DEFAULT=[
+  {id:'proj',name:'โปรเจกเตอร์',icon:'ti-device-projector',total:3,borrowed:0},
+  {id:'mic', name:'ไมโครโฟน',  icon:'ti-microphone',       total:6,borrowed:0},
+  {id:'cam', name:'กล้อง DSLR',icon:'ti-camera',            total:2,borrowed:0},
+  {id:'spk', name:'ลำโพง',     icon:'ti-speakerphone',      total:4,borrowed:0},
+  {id:'tri', name:'ขาตั้งกล้อง',icon:'ti-viewfinder',       total:3,borrowed:0},
+  {id:'ban', name:'ผ้าแบนเนอร์',icon:'ti-flag',             total:5,borrowed:0},
+];
+let EQ=[];
+
+function loadEq(){
+  try{ const s=localStorage.getItem(EQ_KEY); EQ=s?JSON.parse(s):[...EQ_DEFAULT]; }
+  catch(e){ EQ=[...EQ_DEFAULT]; }
+}
+function saveEq(){
+  localStorage.setItem(EQ_KEY,JSON.stringify(EQ));
+  showToast('บันทึกรายการอุปกรณ์แล้ว ✅');
+}
+function renderEqGrid(){
+  const g=document.getElementById('eq-grid');
+  if(!EQ.length){g.innerHTML='<p style="color:var(--mu);font-size:14px">ยังไม่มีอุปกรณ์</p>';return;}
+  g.innerHTML=EQ.map(e=>`
+    <div class="eq-card">
+      <div class="eq-icon"><i class="ti ${e.icon}"></i></div>
+      <div class="eq-info">
+        <div class="eq-name">${e.name}</div>
+        <div class="eq-count">ทั้งหมด ${e.total} ชิ้น · กำลังยืม ${e.borrowed} ชิ้น</div>
+      </div>
+      <div class="eq-actions">
+        <button class="btn-edit" onclick="openEdit('${e.id}')"><i class="ti ti-pencil" style="font-size:13px"></i></button>
+        <button class="btn-del" onclick="delEq('${e.id}')"><i class="ti ti-trash" style="font-size:13px"></i></button>
+      </div>
+    </div>`).join('');
+}
+function addEq(){
+  const name=document.getElementById('new-name').value.trim();
+  const icon=document.getElementById('new-icon').value;
+  const total=parseInt(document.getElementById('new-total').value)||0;
+  if(!name){showToast('กรุณาใส่ชื่ออุปกรณ์');return;}
+  if(total<1){showToast('จำนวนต้องมากกว่า 0');return;}
+  const id='eq_'+Date.now();
+  EQ.push({id,name,icon,total,borrowed:0});
+  document.getElementById('new-name').value='';
+  document.getElementById('new-total').value='';
+  renderEqGrid();
+  showToast(`เพิ่ม "${name}" แล้ว (อย่าลืมกดบันทึก)`);
+}
+function delEq(id){
+  const e=EQ.find(x=>x.id===id);
+  if(!confirm(`ลบ "${e.name}" ออกจากระบบ?`)) return;
+  EQ=EQ.filter(x=>x.id!==id);
+  renderEqGrid();
+  showToast(`ลบ "${e.name}" แล้ว (อย่าลืมกดบันทึก)`);
+}
+
+// ========= EDIT MODAL =========
+function openEdit(id){
+  const e=EQ.find(x=>x.id===id);
+  document.getElementById('edit-id').value=id;
+  document.getElementById('edit-name').value=e.name;
+  document.getElementById('edit-total').value=e.total;
+  document.getElementById('edit-icon').value=e.icon;
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal(){ document.getElementById('modal-bg').classList.remove('open'); }
+function saveEdit(){
+  const id=document.getElementById('edit-id').value;
+  const name=document.getElementById('edit-name').value.trim();
+  const total=parseInt(document.getElementById('edit-total').value)||1;
+  const icon=document.getElementById('edit-icon').value;
+  if(!name){showToast('กรุณาใส่ชื่อ');return;}
+  const idx=EQ.findIndex(x=>x.id===id);
+  EQ[idx]={...EQ[idx],name,total,icon};
+  closeModal();
+  renderEqGrid();
+  showToast(`แก้ไข "${name}" แล้ว (อย่าลืมกดบันทึก)`);
+}
+document.getElementById('modal-bg').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+// ========= REQUESTS =========
+const REQ_KEY='admin_requests';
+// ดึงข้อมูลจาก Google Sheets
+async function loadReqs(){
+  const tb=document.getElementById('req-body');
+  tb.innerHTML='<tr><td colspan="7" class="empty"><i class="ti ti-loader" style="font-size:24px;display:block;margin-bottom:6px"></i>กำลังโหลด...</td></tr>';
+  try{
+    const res = await fetch(SHEET_URL+'?action=getAll');
+    const data = await res.json();
+    return data.rows || [];
+  }catch(e){
+    tb.innerHTML='<tr><td colspan="7" class="empty" style="color:#c0392b">⚠️ โหลดข้อมูลไม่ได้ กรุณาตรวจสอบการเชื่อมต่อ</td></tr>';
+    return [];
+  }
+}
+
+async function renderReqs(){
+  const reqs = await loadReqs();
+  const tb=document.getElementById('req-body');
+  const waiting=reqs.filter(r=>r.status==='รอการอนุมัติ').length;
+  const approved=reqs.filter(r=>r.status==='อนุมัติ').length;
+  const returned=reqs.filter(r=>r.status==='คืนแล้ว').length;
+  document.getElementById('stat-cards').innerHTML=`
+    <div class="stat-card"><div class="stat-ic" style="background:#fdeaea"><i class="ti ti-clock-exclamation" style="color:#c0392b"></i></div>
+      <div><div class="stat-num" style="color:#c0392b">${waiting}</div><div class="stat-label">รอการอนุมัติ</div></div></div>
+    <div class="stat-card"><div class="stat-ic" style="background:var(--okb)"><i class="ti ti-check" style="color:var(--ok)"></i></div>
+      <div><div class="stat-num" style="color:var(--ok)">${approved}</div><div class="stat-label">อนุมัติแล้ว</div></div></div>
+    <div class="stat-card"><div class="stat-ic" style="background:var(--ib)"><i class="ti ti-circle-check" style="color:var(--it)"></i></div>
+      <div><div class="stat-num" style="color:var(--it)">${returned}</div><div class="stat-label">คืนแล้ว</div></div></div>`;
+
+  if(!reqs.length){tb.innerHTML='<tr><td colspan="7" class="empty"><i class="ti ti-inbox" style="font-size:24px;display:block;margin-bottom:6px"></i>ยังไม่มีคำขอ</td></tr>';return;}
+  tb.innerHTML=reqs.map((r,i)=>{
+    const badgeCls=r.status==='รอการอนุมัติ'?'b-wait':r.status==='อนุมัติ'?'b-ok':r.status==='คืนแล้ว'?'b-ret':'b-rej';
+    const canAct=r.status==='รอการอนุมัติ';
+    return`<tr>
+      <td><strong>${r.name||''}</strong><br/><span style="font-size:11px;color:var(--mu)">${r.studentId||''} · ${r.year||''}</span></td>
+      <td>${r.items||''}</td>
+      <td>${r.quantities||''}</td>
+      <td style="font-size:12px">${r.date||''}<br/><span style="color:var(--mu)">${r.time||''} น.</span></td>
+      <td><span style="font-size:12px">${r.type==='ยืม'?'📤 ยืม':'📥 คืน'}</span></td>
+      <td><span class="badge ${badgeCls}">${r.status||''}</span></td>
+      <td style="white-space:nowrap">
+        ${canAct?`<button class="btn-approve" onclick="setStatus(${r.row},'อนุมัติ')">✅ อนุมัติ</button>
+        <button class="btn-reject" style="margin-left:4px" onclick="setStatus(${r.row},'ปฏิเสธ')">❌ ปฏิเสธ</button>`
+        :'<span style="color:var(--mu);font-size:12px">—</span>'}
+      </td></tr>`;
+  }).join('');
+}
+
+async function setStatus(row, status){
+  showToast('กำลังอัปเดต...');
+  try{
+    await fetch(SHEET_URL, {method:'POST', body: JSON.stringify({action:'updateStatus', row, status})});
+    showToast(status==='อนุมัติ'?'อนุมัติคำขอแล้ว ✅':'ปฏิเสธคำขอแล้ว');
+    renderReqs();
+  }catch(e){ showToast('เกิดข้อผิดพลาด ลองใหม่อีกครั้ง'); }
+}
+
+function clearReqs(){
+  showToast('ฟีเจอร์นี้ให้ลบใน Google Sheets โดยตรงครับ');
+}
+
+// ========= TABS =========
+function sw(tab){
+  document.querySelectorAll('.nt').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.pn').forEach(p=>p.classList.remove('on'));
+  const tabs=['eq','req','settings'];
+  document.querySelectorAll('.nt')[tabs.indexOf(tab)].classList.add('on');
+  document.getElementById('panel-'+tab).classList.add('on');
+  if(tab==='req') renderReqs();
+}
+
+// ========= TOAST =========
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ========= INIT =========
+function loadAll(){ loadEq(); renderEqGrid(); }
+</script>
+</body>
+</html>
