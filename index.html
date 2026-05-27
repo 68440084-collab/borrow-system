@@ -681,14 +681,21 @@ function doSubmit(){
 
   const payload={
     sheetName: 'system-borrow',
-    timestamp: new Date().toLocaleString('th-TH'),
-    type: mode==='borrow'?'ยืม':'คืน',
-    name: nm, studentId: sid, major: mj, year: yr,
-    tel: tl, email: em, date: dt, time: tm,
-    items: items.map(e=>e.name).join(', '),
-    quantities: items.map(e=>q[e.id]).join(', '),
-    purpose: document.getElementById('f-purpose').value.trim(),
-    status: mode==='borrow'?'รอการอนุมัติ':'คืนแล้ว'
+    'วันที่ เวลา': new Date().toLocaleString('th-TH'),
+    'ประเภท': mode==='borrow'?'ยืม':'คืน',
+    'สถานะ': mode==='borrow'?'รอการอนุมัติ':'คืนแล้ว',
+    'ชื่อ นามสกุล': nm,
+    'รหัสนิสิต': sid,
+    'สาขา': mj,
+    'ชั้นปี': yr,
+    'เบอร์โทร': tl,
+    'อีเมล': em,
+    'วันที่ยืม คืน': dt,
+    'เวลา': tm,
+    'อุปกรณ์': items.map(e=>e.name).join(', '),
+    'จำนวน': items.map(e=>q[e.id]).join(', '),
+    'วัตถุประสงค์': document.getElementById('f-purpose').value.trim(),
+    'รูปใบรับรองสิทธิ์': ''
   };
 
   if(mode==='borrow'){
