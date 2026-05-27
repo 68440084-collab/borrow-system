@@ -10,78 +10,136 @@
 @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&family=Noto+Serif+Thai:wght@700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  /* Blue ocean palette from image */
-  --in:#4569AD;   /* Sailing blue */
-  --in2:#8EA2D7;  /* Solid blue */
-  --in3:#1F3F74;  /* Dive */
-  --in4:#14366D;  /* Deep sea */
-  --in5:#081F44;  /* Night time */
-  --inl:#B7C3E8;  /* Lilac blue */
-  --gold:#B7C3E8;--gold2:#8EA2D7;--gold3:#d0daef;--gp:#eef1f9;
-  --bg:#eef1f9;--wh:#fff;
-  --tx:#0d1e3a;--mu:#4569AD;
+  /* Red palette */
+  --in:#B01C1C;   /* Crimson */
+  --in2:#C82020;  /* Bright red */
+  --in3:#8B1A1A;  /* Deep red */
+  --in4:#6B0A0A;  /* Dark red */
+  --in5:#4A0606;  /* Night red */
+  --inl:#E8B7B7;  /* Light rose */
+  --gold:#E8B7B7;--gold2:#D78E8E;--gold3:#f0dcdc;--gp:#f9eeee;
+  --bg:#f9eeee;--wh:#fff;
+  --tx:#3a0d0d;--mu:#B01C1C;
   --ok:#1a6b3a;--okb:#e4f5ec;
   --wn:#7a4f00;--wnb:#fff3cc;
   --rd:#8b1a1a;--rdb:#fdeaea;
-  --ib:#dce4f5;--it:#1F3F74;
-  --br:rgba(69,105,173,0.18);
+  --ib:#f5dcdc;--it:#741F1F;
+  --br:rgba(176,28,28,0.18);
 }
 body{font-family:'Sarabun',sans-serif;background:var(--bg)}
 .w{max-width:860px;margin:0 auto;padding-bottom:3rem}
 
 /* LOGIN OVERLAY */
+@keyframes loginFadeIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes gridPulse{0%,100%{opacity:.18}50%{opacity:.32}}
+@keyframes logoBreathe{0%,100%{box-shadow:0 0 0 0 rgba(232,183,183,0)}50%{box-shadow:0 0 0 10px rgba(232,183,183,.18)}}
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
 #login-overlay{
-  position:fixed;inset:0;background:var(--in5);z-index:9999;
+  position:fixed;inset:0;z-index:9999;
   display:flex;align-items:center;justify-content:center;
+  background:var(--in5);
   background-image:
-    linear-gradient(45deg, rgba(183,195,232,0.08) 1px, transparent 1px),
-    linear-gradient(-45deg, rgba(183,195,232,0.08) 1px, transparent 1px);
+    linear-gradient(45deg, rgba(201,164,53,.15) 1px, transparent 1px),
+    linear-gradient(-45deg, rgba(201,164,53,.15) 1px, transparent 1px);
   background-size:32px 32px;
+  overflow:hidden;
+}
+#login-overlay::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 60%, rgba(176,28,28,.35) 0%, transparent 60%),
+             radial-gradient(ellipse at 80% 20%, rgba(100,10,10,.4) 0%, transparent 50%);
+  pointer-events:none;
+  animation:gridPulse 5s ease-in-out infinite;
 }
 .login-box{
-  background:rgba(255,255,255,0.05);backdrop-filter:blur(12px);
-  border:1px solid rgba(183,195,232,0.2);border-radius:18px;
-  padding:2.5rem 2rem;max-width:380px;width:90%;text-align:center;
+  background:rgba(255,255,255,0.06);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(232,183,183,.22);
+  border-radius:20px;
+  padding:2.8rem 2.2rem;max-width:380px;width:92%;text-align:center;
+  position:relative;
+  animation:loginFadeIn .55s cubic-bezier(.22,1,.36,1) both;
+  box-shadow:0 24px 64px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
 }
-.login-logo{width:110px;height:110px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;margin:0 auto 1.2rem;
-  background:rgba(183,195,232,0.12);
-  border:2px solid rgba(183,195,232,0.25);padding:6px;overflow:hidden}
+.login-logo{
+  width:100px;height:100px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 1.2rem;
+  background:rgba(255,255,255,0.07);
+  border:2px solid rgba(232,183,183,.35);
+  padding:6px;overflow:hidden;
+  animation:logoBreathe 3.5s ease-in-out infinite, float 4s ease-in-out infinite;
+}
 .login-logo img{width:100%;height:100%;border-radius:50%;object-fit:cover}
-.login-title{font-family:'Noto Serif Thai',serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:4px}
-.login-sub{font-size:12px;color:rgba(183,195,232,0.7);margin-bottom:1.8rem}
-.login-label{font-size:13px;color:rgba(183,195,232,0.85);text-align:left;display:block;margin-bottom:6px;font-weight:500}
+
+.login-title{
+  font-family:'Noto Serif Thai',serif;font-size:20px;font-weight:700;
+  color:#fff;margin-bottom:4px;
+  text-shadow:0 1px 8px rgba(0,0,0,.4);
+}
+.login-sub{font-size:12px;color:rgba(240,212,106,.75);margin-bottom:1.8rem;line-height:1.65}
+.login-label{
+  font-size:13px;color:rgba(240,212,106,.85);
+  text-align:left;display:block;margin-bottom:6px;font-weight:500;
+}
 .login-input{
-  width:100%;padding:11px 14px;background:rgba(255,255,255,0.08);
-  border:1.5px solid rgba(183,195,232,0.25);border-radius:10px;
+  width:100%;padding:11px 14px;
+  background:rgba(255,255,255,0.07);
+  border:1.5px solid rgba(232,183,183,.22);border-radius:10px;
   font-family:'Sarabun',sans-serif;font-size:14px;color:#fff;
-  transition:border-color .2s;margin-bottom:1.1rem;
+  transition:border-color .25s, background .25s, box-shadow .25s;
+  margin-bottom:1.1rem;
 }
-.login-input::placeholder{color:rgba(183,195,232,0.4)}
-.login-input:focus{outline:none;border-color:var(--inl);background:rgba(255,255,255,0.12)}
+.login-input::placeholder{color:rgba(232,183,183,.4)}
+.login-input:focus{
+  outline:none;
+  border-color:rgba(232,183,183,.7);
+  background:rgba(255,255,255,.11);
+  box-shadow:0 0 0 3px rgba(176,28,28,.25);
+}
 .login-btn{
-  width:100%;padding:12px;background:var(--in);color:#fff;
+  width:100%;padding:12px;
+  background:linear-gradient(135deg,var(--in2),var(--in));
+  color:#fff;
   font-family:'Sarabun',sans-serif;font-size:15px;font-weight:600;
-  border:none;border-radius:10px;cursor:pointer;transition:background .2s;
+  border:none;border-radius:10px;cursor:pointer;
+  transition:transform .18s, box-shadow .18s, filter .18s;
+  box-shadow:0 4px 18px rgba(176,28,28,.55);
+  position:relative;overflow:hidden;
 }
-.login-btn:hover{background:var(--in3)}
-.login-err{display:none;background:rgba(139,26,26,0.3);border:1px solid rgba(139,26,26,0.5);
-  color:#ffaaaa;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:1rem;text-align:left}
+.login-btn::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.18) 50%,transparent 100%);
+  background-size:200% auto;
+  animation:shimmer 2.5s linear infinite;
+}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(176,28,28,.7);filter:brightness(1.1)}
+.login-btn:active{transform:translateY(0);box-shadow:0 2px 10px rgba(176,28,28,.4)}
+.login-err{
+  display:none;background:rgba(139,26,26,.35);
+  border:1px solid rgba(200,32,32,.45);
+  color:#ffbbbb;border-radius:8px;
+  padding:8px 12px;font-size:13px;margin-bottom:1rem;text-align:left;
+  animation:loginFadeIn .3s ease both;
+}
 .login-err.sh{display:block}
-.login-note{font-size:11.5px;color:rgba(183,195,232,0.5);margin-top:1rem}
+.login-note{font-size:11.5px;color:rgba(240,212,106,.45);margin-top:1rem}
 
 /* USER BAR */
 #user-bar{
   background:var(--in4);padding:8px 16px;display:flex;align-items:center;
   justify-content:space-between;font-size:13px;color:rgba(183,195,232,0.9);
-  border-bottom:1px solid rgba(183,195,232,0.15);
+  border-bottom:1px solid rgba(201,164,53,0.2);
 }
 #user-bar span{display:flex;align-items:center;gap:6px}
-#user-bar i{font-size:15px;color:var(--inl)}
-.logout-btn{background:rgba(183,195,232,0.12);border:1px solid rgba(183,195,232,0.2);
-  color:rgba(183,195,232,0.8);padding:4px 12px;border-radius:6px;font-family:'Sarabun',sans-serif;
+#user-bar i{font-size:15px;color:var(--gold2)}
+.logout-btn{background:rgba(201,164,53,0.12);border:1px solid rgba(201,164,53,0.25);
+  color:rgba(240,212,106,.8);padding:4px 12px;border-radius:6px;font-family:'Sarabun',sans-serif;
   font-size:12px;cursor:pointer;transition:all .2s}
-.logout-btn:hover{background:rgba(183,195,232,0.2);color:#fff}
+.logout-btn:hover{background:rgba(201,164,53,0.25);color:#fff}
 
 /* CONFIRM MODAL */
 #confirm-modal{
@@ -114,29 +172,29 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
 .hdr-bg{
   position:absolute;inset:0;
   background-image:
-    linear-gradient(45deg, rgba(183,195,232,0.12) 1px, transparent 1px),
-    linear-gradient(-45deg, rgba(183,195,232,0.12) 1px, transparent 1px),
-    linear-gradient(45deg, transparent 50%, rgba(183,195,232,0.03) 50%),
-    linear-gradient(-45deg, transparent 50%, rgba(183,195,232,0.03) 50%);
+    linear-gradient(45deg, rgba(201,164,53,.2) 1px, transparent 1px),
+    linear-gradient(-45deg, rgba(201,164,53,.2) 1px, transparent 1px),
+    linear-gradient(45deg, transparent 50%, rgba(201,164,53,.04) 50%),
+    linear-gradient(-45deg, transparent 50%, rgba(201,164,53,.04) 50%);
   background-size:28px 28px;
 }
 .hdr-bg2{
   position:absolute;inset:0;
-  background:radial-gradient(ellipse at center, rgba(31,63,116,0.0) 40%, rgba(8,31,68,0.65) 100%);
+  background:radial-gradient(ellipse at center, rgba(61,59,142,0) 40%, rgba(13,11,60,.55) 100%);
 }
 .hs{display:none}
 .hb{padding:1.4rem 1.5rem 1.2rem;display:flex;align-items:center;gap:1.2rem;justify-content:center;position:relative;z-index:2}
 .hc{text-align:center}
-.hf{font-size:11px;font-weight:600;letter-spacing:.8px;color:rgba(183,195,232,0.7);margin-bottom:5px;text-transform:uppercase}
+.hf{font-size:11px;font-weight:600;letter-spacing:.8px;color:rgba(240,212,106,.75);margin-bottom:5px;text-transform:uppercase}
 .ht{font-family:'Noto Serif Thai',serif;font-size:22px;font-weight:700;color:var(--wh);line-height:1.35}
-.hsu{font-size:12px;color:rgba(183,195,232,0.8);margin-top:5px}
-.hbadge{display:inline-block;background:var(--in);color:#fff;font-size:11px;font-weight:700;padding:3px 14px;border-radius:20px;margin-bottom:8px;letter-spacing:.5px}
-.hr{height:3px;background:linear-gradient(to right,var(--inl),var(--in),var(--in4));position:relative;z-index:2}
+.hsu{font-size:12px;color:rgba(240,212,106,.75);margin-top:5px}
+.hbadge{display:inline-block;background:var(--gold);color:var(--in5);font-size:11px;font-weight:700;padding:3px 14px;border-radius:20px;margin-bottom:8px;letter-spacing:.3px;white-space:nowrap}
+.hr{height:3px;background:var(--gold);position:relative;z-index:2}
 
-.nav{display:flex;background:var(--in4);border-bottom:2.5px solid var(--in)}
+.nav{display:flex;background:var(--in3);border-bottom:2.5px solid var(--gold)}
 .nt{flex:1;padding:12px 4px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);cursor:pointer;border:none;background:none;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px;border-bottom:3px solid transparent;margin-bottom:-2.5px}
 .nt:hover{color:var(--wh);background:rgba(255,255,255,0.07)}
-.nt.on{color:var(--inl);border-bottom-color:var(--inl);background:rgba(183,195,232,0.08);font-weight:600}
+.nt.on{color:var(--gold3);border-bottom-color:var(--gold);background:rgba(255,255,255,.06);font-weight:600}
 .nt i{font-size:16px}
 .pn{display:none;padding:1.3rem}
 .pn.on{display:block}
@@ -260,8 +318,6 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
     <div class="login-err" id="login-err"></div>
     <label class="login-label">อีเมลมหาวิทยาลัย (@go.buu.ac.th)</label>
     <input class="login-input" type="email" id="login-email" placeholder="xxxxx@go.buu.ac.th" autocomplete="email"/>
-    <label class="login-label">รหัสผ่าน (รหัสนิสิต)</label>
-    <input class="login-input" type="password" id="login-pass" placeholder="รหัสนิสิต เช่น 65xxxxxxxx"/>
     <button class="login-btn" onclick="doLogin()"><i class="ti ti-login" style="margin-right:6px"></i>เข้าสู่ระบบ</button>
     <div class="login-note">* ใช้ได้เฉพาะอีเมล @go.buu.ac.th เท่านั้น</div>
   </div>
@@ -296,8 +352,8 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
   <div class="hs"></div>
   <div class="hb">
     <div class="hc">
-      <div class="hbadge">สโมสรนิสิต</div>
-      <div class="ht">ระบบยืม-คืนอุปกรณ์<br>คณะรัฐศาสตร์ มหาวิทยาลัยบูรพา</div>
+      <div class="hbadge">สโมสรนิสิตคณะรัฐศาสตร์ มหาวิทยาลัยบูรพา</div>
+      <div class="ht">ระบบยืม-คืนอุปกรณ์</div>
       <div class="hsu">Faculty of Political Science — Burapha University</div>
     </div>
   </div>
@@ -361,7 +417,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
     <div class="fi"><label class="fl">เวลา <span>*</span></label><input class="fn" type="time" id="f-time"/></div>
     <div class="fi f2" id="purpose-row"><label class="fl">วัตถุประสงค์</label><input class="fn" type="text" id="f-purpose" placeholder="ระบุวัตถุประสงค์การใช้งาน"/></div>
     <div class="fi f2">
-      <label class="fl">หลักฐานประกอบ <span>*</span> <span style="color:var(--mu);font-weight:400;font-size:12px">(เช่น รูปบัตรนิสิต)</span></label>
+      <label class="fl" id="proof-label">หลักฐานประกอบ <span>*</span> <span style="color:var(--mu);font-weight:400;font-size:12px">(เช่น รูปบัตรนิสิต)</span></label>
       <div class="upload-area" id="upload-area" onclick="document.getElementById('f-proof').click()">
         <i class="ti ti-photo-up" style="font-size:28px;color:var(--in);opacity:.7"></i>
         <div style="font-size:13.5px;font-weight:500;color:var(--in3)">คลิกหรือลากไฟล์มาวางที่นี่</div>
@@ -439,32 +495,30 @@ let currentUser = null;
 
 function doLogin(){
   const email = document.getElementById('login-email').value.trim().toLowerCase();
-  const pass = document.getElementById('login-pass').value.trim();
   const errEl = document.getElementById('login-err');
 
-  if(!email || !pass){
-    errEl.textContent = 'กรุณากรอกอีเมลและรหัสผ่าน';
+  if(!email){
+    errEl.textContent = 'กรุณากรอกอีเมล';
     errEl.classList.add('sh'); return;
   }
   if(!email.endsWith('@go.buu.ac.th')){
     errEl.textContent = 'อนุญาตเฉพาะอีเมล @go.buu.ac.th เท่านั้น';
     errEl.classList.add('sh'); return;
   }
-  if(pass.length < 6){
-    errEl.textContent = 'รหัสนิสิตต้องมีอย่างน้อย 6 ตัวอักษร';
-    errEl.classList.add('sh'); return;
-  }
   errEl.classList.remove('sh');
 
+  // Extract student ID from email (part before @)
+  const studentId = email.split('@')[0];
+
   // Login success
-  currentUser = { email: email, studentId: pass };
+  currentUser = { email: email, studentId: studentId };
   try { localStorage.setItem('buu_user', JSON.stringify(currentUser)); } catch(_){}
 
   document.getElementById('login-overlay').style.display = 'none';
   document.getElementById('main-app').style.display = 'block';
   document.getElementById('user-email-display').textContent = email;
   document.getElementById('f-email').value = email;
-  document.getElementById('f-sid').value = pass;
+  document.getElementById('f-sid').value = studentId;
   document.getElementById('status-email-label').textContent = email;
 
   rGrid('eq-grid', bQ, false);
@@ -478,15 +532,11 @@ function doLogout(){
   document.getElementById('login-overlay').style.display = 'flex';
   document.getElementById('main-app').style.display = 'none';
   document.getElementById('login-email').value = '';
-  document.getElementById('login-pass').value = '';
 }
 
 // Allow Enter key to login
-document.getElementById('login-pass').addEventListener('keydown', e => {
-  if(e.key === 'Enter') doLogin();
-});
 document.getElementById('login-email').addEventListener('keydown', e => {
-  if(e.key === 'Enter') document.getElementById('login-pass').focus();
+  if(e.key === 'Enter') doLogin();
 });
 
 // Restore session
@@ -586,6 +636,9 @@ function setMode(m){
   document.getElementById('return-section').style.display=m==='return'?'block':'none';
   document.getElementById('purpose-row').style.display=m==='borrow'?'flex':'none';
   document.getElementById('btn-label').textContent=m==='borrow'?'ส่งคำขอยืมอุปกรณ์':'ยืนยันการคืนอุปกรณ์';
+  document.getElementById('proof-label').innerHTML=m==='borrow'
+    ? 'หลักฐานประกอบ <span>*</span> <span style="color:var(--mu);font-weight:400;font-size:12px">(เช่น รูปบัตรนิสิต)</span>'
+    : 'รูปสภาพสิ่งของที่คืน <span>*</span> <span style="color:var(--mu);font-weight:400;font-size:12px">(ถ่ายให้เห็นสภาพอุปกรณ์ชัดเจน)</span>';
   bQ={};rQ={};rGrid('eq-grid',bQ,false);rGrid('ret-grid',rQ,true);
 }
 function sw(tab){
@@ -616,17 +669,18 @@ function doSubmit(){
   const tm=document.getElementById('f-time').value;
   if(!nm||!sid||!mj||!yr||!tl||!em||!dt||!tm){alert('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');return;}
   const proof=document.getElementById('f-proof');
-  if(mode==='borrow' && (!proof.files||!proof.files.length)){
+  if(!proof.files||!proof.files.length){
     const ua=document.getElementById('upload-area');
     ua.style.borderColor='#c0392b';ua.style.background='#fdeaea';
     setTimeout(()=>{ua.style.borderColor='';ua.style.background='';},2500);
-    alert('กรุณาแนบหลักฐาน (เช่น รูปบัตรนิสิต) ก่อนส่งคำขอ');return;
+    alert('กรุณาแนบ'+(mode==='borrow'?'หลักฐาน (เช่น รูปบัตรนิสิต)':'รูปสภาพสิ่งของที่คืน')+' ก่อนส่งคำขอ');return;
   }
   const q=mode==='borrow'?bQ:rQ;
   const items=EQ.filter(e=>(q[e.id]||0)>0);
   if(!items.length){alert('กรุณาเลือกจำนวนอุปกรณ์ที่ต้องการ'+(mode==='borrow'?'ยืม':'คืน'));return;}
 
   const payload={
+    sheetName: 'system-borrow',
     timestamp: new Date().toLocaleString('th-TH'),
     type: mode==='borrow'?'ยืม':'คืน',
     name: nm, studentId: sid, major: mj, year: yr,
@@ -752,7 +806,7 @@ ua.addEventListener('drop',e=>{
 async function loadStatus(){
   const tb=document.getElementById('status-body');
   try{
-    const res=await fetch(SHEET_URL+'?action=getAll');
+    const res=await fetch(SHEET_URL+'?action=getAll&sheetName=system-borrow');
     const data=await res.json();
     let rows=data.rows||[];
     // Filter by logged-in user email
