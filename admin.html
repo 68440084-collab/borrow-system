@@ -261,7 +261,8 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx)}
 
     <!-- TAB: คำขอยืม -->
     <div class="pn" id="panel-req">
-      <div class="stats" id="stat-cards"></div>
+      <div class="stats" id="stat-cards" style="grid-template-columns:repeat(4,1fr)"></div>
+      <div id="borrow-count-table"></div>
       <div class="st"><div class="sb"></div>รายการคำขอยืมอุปกรณ์</div>
       <div class="sw2">
         <table class="tb">
@@ -385,12 +386,12 @@ function changePw(){
 // ========= EQUIPMENT =========
 const EQ_KEY = 'eq_list';
 const EQ_DEFAULT=[
-  {id:'proj',name:'โปรเจกเตอร์',icon:'ti-device-projector',total:3,borrowed:0},
-  {id:'mic', name:'ไมโครโฟน',  icon:'ti-microphone',       total:6,borrowed:0},
-  {id:'cam', name:'กล้อง DSLR',icon:'ti-camera',            total:2,borrowed:0},
-  {id:'spk', name:'ลำโพง',     icon:'ti-speakerphone',      total:4,borrowed:0},
-  {id:'tri', name:'ขาตั้งกล้อง',icon:'ti-viewfinder',       total:3,borrowed:0},
-  {id:'ban', name:'ผ้าแบนเนอร์',icon:'ti-flag',             total:5,borrowed:0},
+  {id:'proj',name:'โปรเจกเตอร์',icon:'ti-device-projector',total:3,borrowed:0,borrowCount:0},
+  {id:'mic', name:'ไมโครโฟน',  icon:'ti-microphone',       total:6,borrowed:0,borrowCount:0},
+  {id:'cam', name:'กล้อง DSLR',icon:'ti-camera',            total:2,borrowed:0,borrowCount:0},
+  {id:'spk', name:'ลำโพง',     icon:'ti-speakerphone',      total:4,borrowed:0,borrowCount:0},
+  {id:'tri', name:'ขาตั้งกล้อง',icon:'ti-viewfinder',       total:3,borrowed:0,borrowCount:0},
+  {id:'ban', name:'ผ้าแบนเนอร์',icon:'ti-flag',             total:5,borrowed:0,borrowCount:0},
 ];
 let EQ=[];
 
@@ -411,6 +412,7 @@ function renderEqGrid(){
       <div class="eq-info">
         <div class="eq-name">${e.name}</div>
         <div class="eq-count">ทั้งหมด ${e.total} ชิ้น · กำลังยืม ${e.borrowed} ชิ้น</div>
+        <div class="eq-count" style="color:var(--in);font-weight:600;margin-top:2px"><i class="ti ti-arrow-up-right" style="font-size:11px"></i> ยืมแล้ว ${e.borrowCount||0} ชิ้น</div>
       </div>
       <div class="eq-actions">
         <button class="btn-edit" onclick="openEdit('${e.id}')"><i class="ti ti-pencil" style="font-size:13px"></i></button>
@@ -485,13 +487,37 @@ async function renderReqs(){
   const waiting=reqs.filter(r=>r.status==='รอการอนุมัติ').length;
   const approved=reqs.filter(r=>r.status==='อนุมัติ').length;
   const returned=reqs.filter(r=>r.status==='คืนแล้ว').length;
+  const totalBorrows=reqs.filter(r=>r.type==='ยืม').length;
   document.getElementById('stat-cards').innerHTML=`
     <div class="stat-card"><div class="stat-ic" style="background:#fdeaea"><i class="ti ti-clock-exclamation" style="color:#c0392b"></i></div>
       <div><div class="stat-num" style="color:#c0392b">${waiting}</div><div class="stat-label">รอการอนุมัติ</div></div></div>
     <div class="stat-card"><div class="stat-ic" style="background:var(--okb)"><i class="ti ti-check" style="color:var(--ok)"></i></div>
       <div><div class="stat-num" style="color:var(--ok)">${approved}</div><div class="stat-label">อนุมัติแล้ว</div></div></div>
     <div class="stat-card"><div class="stat-ic" style="background:var(--ib)"><i class="ti ti-circle-check" style="color:var(--it)"></i></div>
-      <div><div class="stat-num" style="color:var(--it)">${returned}</div><div class="stat-label">คืนแล้ว</div></div></div>`;
+      <div><div class="stat-num" style="color:var(--it)">${returned}</div><div class="stat-label">คืนแล้ว</div></div></div>
+    <div class="stat-card"><div class="stat-ic" style="background:#fff3e0"><i class="ti ti-chart-bar" style="color:#e67e22"></i></div>
+      <div><div class="stat-num" style="color:#e67e22">${totalBorrows}</div><div class="stat-label">คำขอยืมทั้งหมด</div></div></div>`;
+
+  // Render borrow count per equipment from localStorage
+  const eqRaw = localStorage.getItem('eq_list');
+  const eqList = eqRaw ? JSON.parse(eqRaw) : [];
+  const bcDiv = document.getElementById('borrow-count-table');
+  if(bcDiv && eqList.length){
+    bcDiv.innerHTML=`<div class="st" style="margin-top:1.2rem"><div class="sb"></div>จำนวนการยืมสะสมต่ออุปกรณ์</div>
+      <div class="sw2"><table class="tb"><thead><tr>
+        <th>อุปกรณ์</th><th>ทั้งหมด</th><th>กำลังยืม</th><th>ยืมสะสม (ชิ้น)</th>
+      </tr></thead><tbody>
+      ${eqList.map(e=>{
+        const pct=e.total>0?Math.round((e.borrowCount||0)/Math.max(e.borrowCount||1,1)*100):0;
+        return`<tr>
+          <td><i class="ti ${e.icon}" style="color:var(--in);margin-right:6px"></i>${e.name}</td>
+          <td>${e.total} ชิ้น</td>
+          <td>${e.borrowed} ชิ้น</td>
+          <td><strong style="color:var(--in);font-size:15px">${e.borrowCount||0}</strong> <span style="color:var(--mu);font-size:11px">ชิ้น</span></td>
+        </tr>`;
+      }).join('')}
+      </tbody></table></div>`;
+  }
 
   if(!reqs.length){tb.innerHTML='<tr><td colspan="7" class="empty"><i class="ti ti-inbox" style="font-size:24px;display:block;margin-bottom:6px"></i>ยังไม่มีคำขอ</td></tr>';return;}
   tb.innerHTML=reqs.map((r,i)=>{

@@ -569,12 +569,12 @@ function closeConfirm(){
 // EQUIPMENT
 // ========================================================
 const EQ_DEFAULT=[
-  {id:'proj',name:'โปรเจกเตอร์',icon:'ti-device-projector',total:3,borrowed:0},
-  {id:'mic', name:'ไมโครโฟน',  icon:'ti-microphone',       total:6,borrowed:0},
-  {id:'cam', name:'กล้อง DSLR',icon:'ti-camera',            total:2,borrowed:0},
-  {id:'spk', name:'ลำโพง',     icon:'ti-speakerphone',      total:4,borrowed:0},
-  {id:'tri', name:'ขาตั้งกล้อง',icon:'ti-viewfinder',       total:3,borrowed:0},
-  {id:'ban', name:'ผ้าแบนเนอร์',icon:'ti-flag',             total:5,borrowed:0},
+  {id:'proj',name:'โปรเจกเตอร์',icon:'ti-device-projector',total:3,borrowed:0,borrowCount:0},
+  {id:'mic', name:'ไมโครโฟน',  icon:'ti-microphone',       total:6,borrowed:0,borrowCount:0},
+  {id:'cam', name:'กล้อง DSLR',icon:'ti-camera',            total:2,borrowed:0,borrowCount:0},
+  {id:'spk', name:'ลำโพง',     icon:'ti-speakerphone',      total:4,borrowed:0,borrowCount:0},
+  {id:'tri', name:'ขาตั้งกล้อง',icon:'ti-viewfinder',       total:3,borrowed:0,borrowCount:0},
+  {id:'ban', name:'ผ้าแบนเนอร์',icon:'ti-flag',             total:5,borrowed:0,borrowCount:0},
 ];
 let EQ;
 try {
@@ -596,6 +596,7 @@ function rGrid(gid,qo,isR){
       <i class="ti ${e.icon} ei" aria-hidden="true"></i>
       <div style="font-size:13px;font-weight:500">${e.name}</div>
       <div class="av">${isR?'กำลังยืม':'คงเหลือ'}: ${a} ชิ้น</div>
+      ${!isR?`<div class="av" style="color:var(--in);font-size:11px"><i class="ti ti-arrow-up-right" style="font-size:10px"></i> ยืมแล้ว ${e.borrowCount||0} ชิ้น</div>`:''}
       <div class="qr">
         <button class="qb" onclick="cQ('${e.id}',${isR?1:0},-1)" aria-label="ลด">−</button>
         <span class="qn" id="${isR?'rq':'bq'}-${e.id}">${qo[e.id]}</span>
@@ -624,6 +625,7 @@ function rInv(){
       <div class="in2">${e.name}</div>
       <div style="display:flex;align-items:baseline;gap:5px"><span class="ibg">${a}</span><span class="ism">/ ${e.total} ชิ้น</span></div>
       <div class="ism">ถูกยืม: ${e.borrowed} ชิ้น</div>
+      <div class="ism" style="color:var(--in);font-weight:600"><i class="ti ti-arrow-up-right" style="font-size:10px"></i> ยืมแล้ว ${e.borrowCount||0} ชิ้น</div>
       <div class="ibw"><div class="ibf" style="width:${pct}%;background:${bc}"></div></div>
     </div>`;
   });
@@ -719,9 +721,15 @@ function proceedSubmit(){
   // Update qty
   items.forEach(e=>{
     const qv=q[e.id];
-    if(mode==='borrow'||payload.type==='ยืม') e.borrowed=Math.min(e.total,e.borrowed+qv);
-    else e.borrowed=Math.max(0,e.borrowed-qv);
+    if(mode==='borrow'||payload.type==='ยืม'){
+      e.borrowed=Math.min(e.total,e.borrowed+qv);
+      e.borrowCount=(e.borrowCount||0)+qv;
+    } else {
+      e.borrowed=Math.max(0,e.borrowed-qv);
+    }
   });
+  // Save updated EQ (borrowCount) to localStorage
+  try{ localStorage.setItem('eq_list',JSON.stringify(EQ)); }catch(_){}
 
   const btnEl=document.querySelector('.bs');
   const btnLabel=document.getElementById('btn-label');
