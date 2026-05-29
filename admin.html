@@ -412,7 +412,6 @@ function renderEqGrid(){
       <div class="eq-info">
         <div class="eq-name">${e.name}</div>
         <div class="eq-count">ทั้งหมด ${e.total} ชิ้น · กำลังยืม ${e.borrowed} ชิ้น</div>
-        <div class="eq-count" style="color:var(--in);font-weight:600;margin-top:2px"><i class="ti ti-arrow-up-right" style="font-size:11px"></i> ยืมแล้ว ${e.borrowCount||0} ชิ้น</div>
       </div>
       <div class="eq-actions">
         <button class="btn-edit" onclick="openEdit('${e.id}')"><i class="ti ti-pencil" style="font-size:13px"></i></button>
@@ -498,24 +497,21 @@ async function renderReqs(){
     <div class="stat-card"><div class="stat-ic" style="background:#fff3e0"><i class="ti ti-chart-bar" style="color:#e67e22"></i></div>
       <div><div class="stat-num" style="color:#e67e22">${totalBorrows}</div><div class="stat-label">คำขอยืมทั้งหมด</div></div></div>`;
 
-  // Render borrow count per equipment from localStorage
+
+  // Render equipment status table
   const eqRaw = localStorage.getItem('eq_list');
   const eqList = eqRaw ? JSON.parse(eqRaw) : [];
   const bcDiv = document.getElementById('borrow-count-table');
   if(bcDiv && eqList.length){
-    bcDiv.innerHTML=`<div class="st" style="margin-top:1.2rem"><div class="sb"></div>จำนวนการยืมสะสมต่ออุปกรณ์</div>
+    bcDiv.innerHTML=`<div class="st" style="margin-top:1.2rem"><div class="sb"></div>สถานะอุปกรณ์</div>
       <div class="sw2"><table class="tb"><thead><tr>
-        <th>อุปกรณ์</th><th>ทั้งหมด</th><th>กำลังยืม</th><th>ยืมสะสม (ชิ้น)</th>
+        <th>อุปกรณ์</th><th>ทั้งหมด</th><th>กำลังยืม</th>
       </tr></thead><tbody>
-      ${eqList.map(e=>{
-        const pct=e.total>0?Math.round((e.borrowCount||0)/Math.max(e.borrowCount||1,1)*100):0;
-        return`<tr>
+      ${eqList.map(e=>`<tr>
           <td><i class="ti ${e.icon}" style="color:var(--in);margin-right:6px"></i>${e.name}</td>
           <td>${e.total} ชิ้น</td>
           <td>${e.borrowed} ชิ้น</td>
-          <td><strong style="color:var(--in);font-size:15px">${e.borrowCount||0}</strong> <span style="color:var(--mu);font-size:11px">ชิ้น</span></td>
-        </tr>`;
-      }).join('')}
+        </tr>`).join('')}
       </tbody></table></div>`;
   }
 

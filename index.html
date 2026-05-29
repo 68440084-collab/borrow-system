@@ -408,7 +408,6 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
         <option value="">-- เลือกชั้นปี --</option>
         <option>ชั้นปีที่ 1</option><option>ชั้นปีที่ 2</option>
         <option>ชั้นปีที่ 3</option><option>ชั้นปีที่ 4</option>
-        <option>ชั้นปีที่ 5 ขึ้นไป</option>
       </select>
     </div>
     <div class="fi"><label class="fl">เบอร์ติดต่อ <span>*</span></label><input class="fn" type="tel" id="f-tel" placeholder="0xx-xxx-xxxx"/></div>
@@ -596,7 +595,6 @@ function rGrid(gid,qo,isR){
       <i class="ti ${e.icon} ei" aria-hidden="true"></i>
       <div style="font-size:13px;font-weight:500">${e.name}</div>
       <div class="av">${isR?'กำลังยืม':'คงเหลือ'}: ${a} ชิ้น</div>
-      ${!isR?`<div class="av" style="color:var(--in);font-size:11px"><i class="ti ti-arrow-up-right" style="font-size:10px"></i> ยืมแล้ว ${e.borrowCount||0} ชิ้น</div>`:''}
       <div class="qr">
         <button class="qb" onclick="cQ('${e.id}',${isR?1:0},-1)" aria-label="ลด">−</button>
         <span class="qn" id="${isR?'rq':'bq'}-${e.id}">${qo[e.id]}</span>
@@ -625,7 +623,6 @@ function rInv(){
       <div class="in2">${e.name}</div>
       <div style="display:flex;align-items:baseline;gap:5px"><span class="ibg">${a}</span><span class="ism">/ ${e.total} ชิ้น</span></div>
       <div class="ism">ถูกยืม: ${e.borrowed} ชิ้น</div>
-      <div class="ism" style="color:var(--in);font-weight:600"><i class="ti ti-arrow-up-right" style="font-size:10px"></i> ยืมแล้ว ${e.borrowCount||0} ชิ้น</div>
       <div class="ibw"><div class="ibf" style="width:${pct}%;background:${bc}"></div></div>
     </div>`;
   });
