@@ -745,16 +745,25 @@ function proceedSubmit(){
 
   sendToSheet.catch(()=>{}).finally(()=>{
     const tb=document.getElementById('status-body');
-    const d2=new Date(payload.date);
+    const pDate = payload.date || payload['วันที่ยืม คืน'] || '';
+    const d2=new Date(pDate);
     const thd=d2.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});
-    const ys=payload.year.replace('ชั้นปีที่ ','ปี ').replace(' ขึ้นไป','+');
-    const isBorrow = payload.type==='ยืม';
+    const yr = payload.year || payload['ชั้นปี'] || '';
+    const ys=yr.replace('ชั้นปีที่ ','ปี ').replace(' ขึ้นไป','+');
+    const pType = payload.type || payload['ประเภท'] || 'ยืม';
+    const isBorrow = pType==='ยืม';
+    const pName = payload.name || payload['ชื่อ นามสกุล'] || '';
+    const pStudentId = payload.studentId || payload['รหัสนิสิต'] || '';
+    const pMajor = payload.major || payload['สาขา'] || '';
+    const pItems = payload.items || payload['อุปกรณ์'] || '';
+    const pQty = payload.quantities || payload['จำนวน'] || '';
+    const pTime = payload.time || payload['เวลา'] || '';
     const row=document.createElement('tr');
-    row.innerHTML=`<td>${payload.name}<br><span style="color:var(--mu);font-size:11px">${payload.studentId} · ${ys}</span></td>
-      <td style="font-size:12px">${payload.major}</td>
-      <td>${payload.items}</td>
-      <td>${payload.quantities}</td>
-      <td>${thd}<br><span style="color:var(--mu);font-size:11px">${payload.time} น.</span></td>
+    row.innerHTML=`<td>${pName}<br><span style="color:var(--mu);font-size:11px">${pStudentId} · ${ys}</span></td>
+      <td style="font-size:12px">${pMajor}</td>
+      <td>${pItems}</td>
+      <td>${pQty}</td>
+      <td>${thd}<br><span style="color:var(--mu);font-size:11px">${pTime} น.</span></td>
       <td><span class="bg2 ${isBorrow?'brd':'bin'}">
         <i class="ti ${isBorrow?'ti-clock-exclamation':'ti-circle-check'}"></i>
         ${isBorrow?'รอการอนุมัติ':'คืนแล้ว'}
