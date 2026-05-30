@@ -408,6 +408,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
         <option value="">-- เลือกชั้นปี --</option>
         <option>ชั้นปีที่ 1</option><option>ชั้นปีที่ 2</option>
         <option>ชั้นปีที่ 3</option><option>ชั้นปีที่ 4</option>
+        <option>ชั้นปีที่ 5 ขึ้นไป</option>
       </select>
     </div>
     <div class="fi"><label class="fl">เบอร์ติดต่อ <span>*</span></label><input class="fn" type="tel" id="f-tel" placeholder="0xx-xxx-xxxx"/></div>
@@ -485,7 +486,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
 // ========================================================
 // 🔗 Google Apps Script URL
 // ========================================================
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzRs5xE0xGoeCqFUUmJ_ByJQepFO6DFlJXY5qP1zXG8Tfruy7E4uMfsnDZb3zheQg_qXA/exec';
+const SHEET_URL = 'https://script.google.com/a/macros/go.buu.ac.th/s/AKfycbx6q-PoTxXx-VzF_HJFK7mx7t3M7dq7BckwE6XY48Tqo3lYIkx49j-mLfax86tAD44VPg/exec';
 
 // ========================================================
 // LOGIN SYSTEM
@@ -595,6 +596,7 @@ function rGrid(gid,qo,isR){
       <i class="ti ${e.icon} ei" aria-hidden="true"></i>
       <div style="font-size:13px;font-weight:500">${e.name}</div>
       <div class="av">${isR?'กำลังยืม':'คงเหลือ'}: ${a} ชิ้น</div>
+      ${!isR?`<div class="av" style="color:var(--in);font-size:11px"><i class="ti ti-arrow-up-right" style="font-size:10px"></i> ยืมแล้ว ${e.borrowCount||0} ชิ้น</div>`:''}
       <div class="qr">
         <button class="qb" onclick="cQ('${e.id}',${isR?1:0},-1)" aria-label="ลด">−</button>
         <span class="qn" id="${isR?'rq':'bq'}-${e.id}">${qo[e.id]}</span>
@@ -623,6 +625,7 @@ function rInv(){
       <div class="in2">${e.name}</div>
       <div style="display:flex;align-items:baseline;gap:5px"><span class="ibg">${a}</span><span class="ism">/ ${e.total} ชิ้น</span></div>
       <div class="ism">ถูกยืม: ${e.borrowed} ชิ้น</div>
+      <div class="ism" style="color:var(--in);font-weight:600"><i class="ti ti-arrow-up-right" style="font-size:10px"></i> ยืมแล้ว ${e.borrowCount||0} ชิ้น</div>
       <div class="ibw"><div class="ibf" style="width:${pct}%;background:${bc}"></div></div>
     </div>`;
   });
@@ -657,7 +660,7 @@ function sw(tab){
 // ========================================================
 let pendingPayload = null;
 
-function doSubmit(){
+async function doSubmit(){
   const nm=document.getElementById('f-name').value.trim();
   const sid=document.getElementById('f-sid').value.trim();
   const mj=document.getElementById('f-major').value;
@@ -678,56 +681,41 @@ function doSubmit(){
   const items=EQ.filter(e=>(q[e.id]||0)>0);
   if(!items.length){alert('กรุณาเลือกจำนวนอุปกรณ์ที่ต้องการ'+(mode==='borrow'?'ยืม':'คืน'));return;}
 
-  // อ่านรูปเป็น base64 + บีบอัดก่อนส่ง
-  const proofFile = proof.files[0];
-  const imgReader = new FileReader();
-  imgReader.onload = function(ev){
-    const img = new Image();
-    img.onload = function(){
-      const MAX = 800;
-      let w = img.width, h = img.height;
-      if(w > MAX || h > MAX){
-        if(w > h){ h = Math.round(h * MAX / w); w = MAX; }
-        else { w = Math.round(w * MAX / h); h = MAX; }
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      const base64Image = canvas.toDataURL('image/jpeg', 0.7);
-
-      const payload={
-        sheetName: 'system-borrow',
-        'วันที่ เวลา': new Date().toLocaleString('th-TH'),
-        'ประเภท': mode==='borrow'?'ยืม':'คืน',
-        'สถานะ': mode==='borrow'?'รอการอนุมัติ':'คืนแล้ว',
-        'ชื่อ นามสกุล': nm,
-        'รหัสนิสิต': sid,
-        'สาขา': mj,
-        'ชั้นปี': yr,
-        'เบอร์โทร': tl,
-        'อีเมล': em,
-        'วันที่ยืม คืน': dt,
-        'เวลา': tm,
-        'อุปกรณ์': items.map(e=>e.name).join(', '),
-        'จำนวน': items.map(e=>q[e.id]).join(', '),
-        'วัตถุประสงค์': document.getElementById('f-purpose').value.trim(),
-        'รูปบัตรนิสิต': mode==='borrow' ? base64Image : '',
-        'หลักฐานการคืน': mode!=='borrow' ? base64Image : ''
-      };
-
-      if(mode==='borrow'){
-        pendingPayload = {payload, items, q};
-        document.getElementById('agree-check').checked = false;
-        document.getElementById('confirm-ok-btn').disabled = true;
-        document.getElementById('confirm-modal').classList.add('sh');
-      } else {
-        pendingPayload = {payload, items, q};
-        proceedSubmit();
-      }
-    };
-    img.src = ev.target.result;
+  const payload={
+    sheetName: 'system-borrow',
+    'วันที่ เวลา': new Date().toLocaleString('th-TH'),
+    'ประเภท': mode==='borrow'?'ยืม':'คืน',
+    'สถานะ': mode==='borrow'?'รอการอนุมัติ':'คืนแล้ว',
+    'ชื่อ นามสกุล': nm,
+    'รหัสนิสิต': sid,
+    'สาขา': mj,
+    'ชั้นปี': yr,
+    'เบอร์โทร': tl,
+    'อีเมล': em,
+    'วันที่ยืม คืน': dt,
+    'เวลา': tm,
+    'อุปกรณ์': items.map(e=>e.name).join(', '),
+    'จำนวน': items.map(e=>q[e.id]).join(', '),
+    'วัตถุประสงค์': document.getElementById('f-purpose').value.trim(),
+    'รูปใบรับรองสิทธิ์': await new Promise(resolve=>{
+      const file=document.getElementById('f-proof').files[0];
+      if(!file){resolve('');return;}
+      const r=new FileReader();
+      r.onload=ev=>resolve(ev.target.result);
+      r.readAsDataURL(file);
+    })
   };
-  imgReader.readAsDataURL(proofFile);
+
+  if(mode==='borrow'){
+    // Show confirm modal
+    pendingPayload = {payload, items, q};
+    document.getElementById('agree-check').checked = false;
+    document.getElementById('confirm-ok-btn').disabled = true;
+    document.getElementById('confirm-modal').classList.add('sh');
+  } else {
+    pendingPayload = {payload, items, q};
+    proceedSubmit();
+  }
 }
 
 function proceedSubmit(){
@@ -736,7 +724,18 @@ function proceedSubmit(){
   const {payload, items, q} = pendingPayload;
   pendingPayload = null;
 
-  // ไม่อัปเดตจำนวนยืมทันที — รอให้ admin อนุมัติก่อน
+  // Update qty
+  items.forEach(e=>{
+    const qv=q[e.id];
+    if(mode==='borrow'||payload.type==='ยืม'){
+      e.borrowed=Math.min(e.total,e.borrowed+qv);
+      e.borrowCount=(e.borrowCount||0)+qv;
+    } else {
+      e.borrowed=Math.max(0,e.borrowed-qv);
+    }
+  });
+  // Save updated EQ (borrowCount) to localStorage
+  try{ localStorage.setItem('eq_list',JSON.stringify(EQ)); }catch(_){}
 
   const btnEl=document.querySelector('.bs');
   const btnLabel=document.getElementById('btn-label');
@@ -753,30 +752,21 @@ function proceedSubmit(){
 
   // Send to Google Sheets
   const sendToSheet=(SHEET_URL!=='YOUR_APPS_SCRIPT_URL_HERE')
-    ? fetch(SHEET_URL,{method:'POST', body:JSON.stringify(payload)})
+    ? fetch(SHEET_URL,{method:'POST',body:JSON.stringify(payload)})
     : Promise.resolve();
 
   sendToSheet.catch(()=>{}).finally(()=>{
     const tb=document.getElementById('status-body');
-    const pDate = payload.date || payload['วันที่ยืม คืน'] || '';
-    const d2=new Date(pDate);
+    const d2=new Date(payload.date);
     const thd=d2.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});
-    const yr = payload.year || payload['ชั้นปี'] || '';
-    const ys=yr.replace('ชั้นปีที่ ','ปี ').replace(' ขึ้นไป','+');
-    const pType = payload.type || payload['ประเภท'] || 'ยืม';
-    const isBorrow = pType==='ยืม';
-    const pName = payload.name || payload['ชื่อ นามสกุล'] || '';
-    const pStudentId = payload.studentId || payload['รหัสนิสิต'] || '';
-    const pMajor = payload.major || payload['สาขา'] || '';
-    const pItems = payload.items || payload['อุปกรณ์'] || '';
-    const pQty = payload.quantities || payload['จำนวน'] || '';
-    const pTime = payload.time || payload['เวลา'] || '';
+    const ys=payload.year.replace('ชั้นปีที่ ','ปี ').replace(' ขึ้นไป','+');
+    const isBorrow = payload.type==='ยืม';
     const row=document.createElement('tr');
-    row.innerHTML=`<td>${pName}<br><span style="color:var(--mu);font-size:11px">${pStudentId} · ${ys}</span></td>
-      <td style="font-size:12px">${pMajor}</td>
-      <td>${pItems}</td>
-      <td>${pQty}</td>
-      <td>${thd}<br><span style="color:var(--mu);font-size:11px">${pTime} น.</span></td>
+    row.innerHTML=`<td>${payload.name}<br><span style="color:var(--mu);font-size:11px">${payload.studentId} · ${ys}</span></td>
+      <td style="font-size:12px">${payload.major}</td>
+      <td>${payload.items}</td>
+      <td>${payload.quantities}</td>
+      <td>${thd}<br><span style="color:var(--mu);font-size:11px">${payload.time} น.</span></td>
       <td><span class="bg2 ${isBorrow?'brd':'bin'}">
         <i class="ti ${isBorrow?'ti-clock-exclamation':'ti-circle-check'}"></i>
         ${isBorrow?'รอการอนุมัติ':'คืนแล้ว'}
