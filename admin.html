@@ -537,36 +537,33 @@ async function renderReqs(){
 async function setStatus(row, status){
   showToast('กำลังอัปเดต...');
   try{
-    // ดึงข้อมูล request ปัจจุบันเพื่อรู้ items/quantities และ type
-    const reqs = await loadReqs();
-    const req = reqs.find(r => r.row === row);
+    // ดึงข้อมูล request เพื่ออัปเดต borrowed
+    const reqs = await fetch(SHEET_URL+'?action=getAll&sheetName=system-borrow').then(r=>r.json()).then(d=>d.rows||[]);
+    const req = reqs.find(r=>r.row === row);
 
     if(req && req.status === 'รอการอนุมัติ'){
-      const itemNames = (req.items||'').split(',').map(s=>s.trim());
-      const qtys = (req.quantities||'').split(',').map(s=>parseInt(s.trim())||0);
-      const reqType = req.type || 'ยืม';
+      const itemNames = (req['อุปกรณ์']||req.items||'').split(',').map(s=>s.trim());
+      const qtys = (req['จำนวน']||req.quantities||'').split(',').map(s=>parseInt(s.trim())||0);
+      const reqType = req['ประเภท']||req.type||'ยืม';
 
       let eqList = [];
       try{ eqList = JSON.parse(localStorage.getItem('eq_list')||'[]'); }catch(_){}
 
       if(status === 'อนุมัติ'){
         if(reqType === 'ยืม'){
-          // อนุมัติยืม: เพิ่มจำนวนที่กำลังยืม
           itemNames.forEach((name,i)=>{
             const eq = eqList.find(e=>e.name===name);
             if(eq) eq.borrowed = Math.min(eq.total, (eq.borrowed||0) + (qtys[i]||0));
           });
         } else {
-          // อนุมัติคืน: ลดจำนวนที่กำลังยืม
           itemNames.forEach((name,i)=>{
             const eq = eqList.find(e=>e.name===name);
             if(eq) eq.borrowed = Math.max(0, (eq.borrowed||0) - (qtys[i]||0));
           });
         }
+        try{ localStorage.setItem('eq_list', JSON.stringify(eqList)); }catch(_){}
       }
-      // ปฏิเสธ: ไม่ต้องเปลี่ยนแปลงจำนวน
-
-      try{ localStorage.setItem('eq_list', JSON.stringify(eqList)); }catch(_){}
+      // ปฏิเสธ: ไม่เปลี่ยนจำนวน
     }
 
     await fetch(SHEET_URL, {method:'POST', body: JSON.stringify({action:'updateStatus', sheetName:'system-borrow', row, status})});

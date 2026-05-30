@@ -485,7 +485,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
 // ========================================================
 // 🔗 Google Apps Script URL
 // ========================================================
-const SHEET_URL = 'https://script.google.com/a/macros/go.buu.ac.th/s/AKfycbx6q-PoTxXx-VzF_HJFK7mx7t3M7dq7BckwE6XY48Tqo3lYIkx49j-mLfax86tAD44VPg/exec';
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzbmTyleVOVyKK_Zv5FL2QZRtQ9atxoS69Fvt-uHRn2-g_cn7mIhTp9ZA0QRRDBZvk0gA/exec';
 
 // ========================================================
 // LOGIN SYSTEM
@@ -678,11 +678,11 @@ function doSubmit(){
   const items=EQ.filter(e=>(q[e.id]||0)>0);
   if(!items.length){alert('กรุณาเลือกจำนวนอุปกรณ์ที่ต้องการ'+(mode==='borrow'?'ยืม':'คืน'));return;}
 
-  // อ่านรูปแปลงเป็น base64 ก่อน แล้วค่อยสร้าง payload
+  // อ่านรูปเป็น base64 ก่อน แล้วค่อยสร้าง payload
   const proofFile = proof.files[0];
   const reader = new FileReader();
   reader.onload = function(ev){
-    const base64Image = ev.target.result; // data:image/...;base64,...
+    const base64Image = ev.target.result;
 
     const payload={
       sheetName: 'system-borrow',
@@ -724,7 +724,6 @@ function proceedSubmit(){
   pendingPayload = null;
 
   // ไม่อัปเดตจำนวนยืมทันที — รอให้ admin อนุมัติก่อน
-  // (admin.html จะอัปเดต borrowed เมื่ออนุมัติ / คืนค่าเมื่อปฏิเสธ)
 
   const btnEl=document.querySelector('.bs');
   const btnLabel=document.getElementById('btn-label');
