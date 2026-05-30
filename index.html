@@ -485,7 +485,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
 // ========================================================
 // 🔗 Google Apps Script URL
 // ========================================================
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzbmTyleVOVyKK_Zv5FL2QZRtQ9atxoS69Fvt-uHRn2-g_cn7mIhTp9ZA0QRRDBZvk0gA/exec';
+const SHEET_URL = 'https://script.google.com/a/macros/go.buu.ac.th/s/AKfycbx6q-PoTxXx-VzF_HJFK7mx7t3M7dq7BckwE6XY48Tqo3lYIkx49j-mLfax86tAD44VPg/exec';
 
 // ========================================================
 // LOGIN SYSTEM
@@ -678,35 +678,43 @@ function doSubmit(){
   const items=EQ.filter(e=>(q[e.id]||0)>0);
   if(!items.length){alert('กรุณาเลือกจำนวนอุปกรณ์ที่ต้องการ'+(mode==='borrow'?'ยืม':'คืน'));return;}
 
-  const payload={
-    sheetName: 'system-borrow',
-    'วันที่ เวลา': new Date().toLocaleString('th-TH'),
-    'ประเภท': mode==='borrow'?'ยืม':'คืน',
-    'สถานะ': mode==='borrow'?'รอการอนุมัติ':'คืนแล้ว',
-    'ชื่อ นามสกุล': nm,
-    'รหัสนิสิต': sid,
-    'สาขา': mj,
-    'ชั้นปี': yr,
-    'เบอร์โทร': tl,
-    'อีเมล': em,
-    'วันที่ยืม คืน': dt,
-    'เวลา': tm,
-    'อุปกรณ์': items.map(e=>e.name).join(', '),
-    'จำนวน': items.map(e=>q[e.id]).join(', '),
-    'วัตถุประสงค์': document.getElementById('f-purpose').value.trim(),
-    'รูปใบรับรองสิทธิ์': ''
-  };
+  // อ่านรูปแปลงเป็น base64 ก่อน แล้วค่อยสร้าง payload
+  const proofFile = proof.files[0];
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const base64Image = ev.target.result; // data:image/...;base64,...
 
-  if(mode==='borrow'){
-    // Show confirm modal
-    pendingPayload = {payload, items, q};
-    document.getElementById('agree-check').checked = false;
-    document.getElementById('confirm-ok-btn').disabled = true;
-    document.getElementById('confirm-modal').classList.add('sh');
-  } else {
-    pendingPayload = {payload, items, q};
-    proceedSubmit();
-  }
+    const payload={
+      sheetName: 'system-borrow',
+      'วันที่ เวลา': new Date().toLocaleString('th-TH'),
+      'ประเภท': mode==='borrow'?'ยืม':'คืน',
+      'สถานะ': mode==='borrow'?'รอการอนุมัติ':'คืนแล้ว',
+      'ชื่อ นามสกุล': nm,
+      'รหัสนิสิต': sid,
+      'สาขา': mj,
+      'ชั้นปี': yr,
+      'เบอร์โทร': tl,
+      'อีเมล': em,
+      'วันที่ยืม คืน': dt,
+      'เวลา': tm,
+      'อุปกรณ์': items.map(e=>e.name).join(', '),
+      'จำนวน': items.map(e=>q[e.id]).join(', '),
+      'วัตถุประสงค์': document.getElementById('f-purpose').value.trim(),
+      'รูปบัตรนิสิต': mode==='borrow' ? base64Image : '',
+      'หลักฐานการคืน': mode==='return' ? base64Image : ''
+    };
+
+    if(mode==='borrow'){
+      pendingPayload = {payload, items, q};
+      document.getElementById('agree-check').checked = false;
+      document.getElementById('confirm-ok-btn').disabled = true;
+      document.getElementById('confirm-modal').classList.add('sh');
+    } else {
+      pendingPayload = {payload, items, q};
+      proceedSubmit();
+    }
+  };
+  reader.readAsDataURL(proofFile);
 }
 
 function proceedSubmit(){
@@ -715,18 +723,8 @@ function proceedSubmit(){
   const {payload, items, q} = pendingPayload;
   pendingPayload = null;
 
-  // Update qty
-  items.forEach(e=>{
-    const qv=q[e.id];
-    if(mode==='borrow'||payload.type==='ยืม'){
-      e.borrowed=Math.min(e.total,e.borrowed+qv);
-      e.borrowCount=(e.borrowCount||0)+qv;
-    } else {
-      e.borrowed=Math.max(0,e.borrowed-qv);
-    }
-  });
-  // Save updated EQ (borrowCount) to localStorage
-  try{ localStorage.setItem('eq_list',JSON.stringify(EQ)); }catch(_){}
+  // ไม่อัปเดตจำนวนยืมทันที — รอให้ admin อนุมัติก่อน
+  // (admin.html จะอัปเดต borrowed เมื่ออนุมัติ / คืนค่าเมื่อปฏิเสธ)
 
   const btnEl=document.querySelector('.bs');
   const btnLabel=document.getElementById('btn-label');

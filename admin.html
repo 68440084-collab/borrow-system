@@ -344,7 +344,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx)}
 
 <script>
 // ========= GOOGLE SHEETS CONFIG =========
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzbmTyleVOVyKK_Zv5FL2QZRtQ9atxoS69Fvt-uHRn2-g_cn7mIhTp9ZA0QRRDBZvk0gA/exec';
+const SHEET_URL = 'https://script.google.com/a/macros/go.buu.ac.th/s/AKfycbx6q-PoTxXx-VzF_HJFK7mx7t3M7dq7BckwE6XY48Tqo3lYIkx49j-mLfax86tAD44VPg/exec';
 
 // ========= AUTH =========
 const ADMIN_PW_KEY = 'admin_pw';
@@ -537,6 +537,38 @@ async function renderReqs(){
 async function setStatus(row, status){
   showToast('กำลังอัปเดต...');
   try{
+    // ดึงข้อมูล request ปัจจุบันเพื่อรู้ items/quantities และ type
+    const reqs = await loadReqs();
+    const req = reqs.find(r => r.row === row);
+
+    if(req && req.status === 'รอการอนุมัติ'){
+      const itemNames = (req.items||'').split(',').map(s=>s.trim());
+      const qtys = (req.quantities||'').split(',').map(s=>parseInt(s.trim())||0);
+      const reqType = req.type || 'ยืม';
+
+      let eqList = [];
+      try{ eqList = JSON.parse(localStorage.getItem('eq_list')||'[]'); }catch(_){}
+
+      if(status === 'อนุมัติ'){
+        if(reqType === 'ยืม'){
+          // อนุมัติยืม: เพิ่มจำนวนที่กำลังยืม
+          itemNames.forEach((name,i)=>{
+            const eq = eqList.find(e=>e.name===name);
+            if(eq) eq.borrowed = Math.min(eq.total, (eq.borrowed||0) + (qtys[i]||0));
+          });
+        } else {
+          // อนุมัติคืน: ลดจำนวนที่กำลังยืม
+          itemNames.forEach((name,i)=>{
+            const eq = eqList.find(e=>e.name===name);
+            if(eq) eq.borrowed = Math.max(0, (eq.borrowed||0) - (qtys[i]||0));
+          });
+        }
+      }
+      // ปฏิเสธ: ไม่ต้องเปลี่ยนแปลงจำนวน
+
+      try{ localStorage.setItem('eq_list', JSON.stringify(eqList)); }catch(_){}
+    }
+
     await fetch(SHEET_URL, {method:'POST', body: JSON.stringify({action:'updateStatus', sheetName:'system-borrow', row, status})});
     showToast(status==='อนุมัติ'?'อนุมัติคำขอแล้ว ✅':'ปฏิเสธคำขอแล้ว');
     renderReqs();
