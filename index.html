@@ -753,7 +753,7 @@ function proceedSubmit(){
 
   // Send to Google Sheets
   const sendToSheet=(SHEET_URL!=='YOUR_APPS_SCRIPT_URL_HERE')
-    ? fetch(SHEET_URL,{method:'POST',body:JSON.stringify(payload)})
+    ? fetch(SHEET_URL,{method:'POST', redirect:'follow', body:JSON.stringify(payload)})
     : Promise.resolve();
 
   sendToSheet.catch(()=>{}).finally(()=>{
