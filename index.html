@@ -278,6 +278,58 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
 .upload-area{border:1.5px dashed var(--br);border-radius:10px;background:var(--wh);padding:18px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all .2s}
 .upload-area:hover{border-color:var(--in);background:var(--ib)}
 
+/* SUCCESS MODAL */
+@keyframes successPop{0%{opacity:0;transform:scale(.85) translateY(20px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes checkDraw{0%{stroke-dashoffset:60}100%{stroke-dashoffset:0}}
+@keyframes circlePulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+#success-modal{
+  position:fixed;inset:0;background:rgba(8,0,0,0.65);z-index:9500;
+  display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);
+}
+#success-modal.sh{display:flex}
+.success-box{
+  background:#fff;border-radius:20px;padding:2.2rem 1.8rem 1.8rem;
+  max-width:400px;width:92%;text-align:center;
+  box-shadow:0 24px 80px rgba(0,0,0,.35);
+  animation:successPop .45s cubic-bezier(.22,1,.36,1) both;
+  position:relative;overflow:hidden;
+}
+.success-box::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--in3),var(--in2),var(--in));
+}
+.success-icon-wrap{
+  width:80px;height:80px;border-radius:50%;
+  background:linear-gradient(135deg,var(--okb),#c8f0d8);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 1.1rem;
+  animation:circlePulse 1.2s ease-in-out 1;
+}
+.success-icon-wrap.ret{background:linear-gradient(135deg,var(--ib),#f0d0d0)}
+.success-icon-wrap svg{width:40px;height:40px}
+.success-title{font-size:19px;font-weight:700;color:var(--in4);margin-bottom:.4rem}
+.success-msg{font-size:13.5px;color:var(--mu);line-height:1.65;margin-bottom:1.4rem}
+.success-detail{background:var(--gp);border:1px solid var(--br);border-radius:10px;
+  padding:12px 14px;margin-bottom:1.4rem;text-align:left}
+.success-detail-row{display:flex;justify-content:space-between;align-items:center;
+  padding:4px 0;font-size:12.5px;border-bottom:0.5px solid var(--br)}
+.success-detail-row:last-child{border-bottom:none;padding-bottom:0}
+.success-detail-row span:first-child{color:var(--mu);font-weight:500}
+.success-detail-row span:last-child{color:var(--in4);font-weight:600;text-align:right;max-width:60%}
+.success-status-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;
+  margin-bottom:1.4rem;
+}
+.success-status-badge.borrow{background:var(--wnb);color:var(--wn)}
+.success-status-badge.ret{background:var(--okb);color:var(--ok)}
+.success-close-btn{
+  width:100%;padding:12px;background:var(--in);color:#fff;
+  font-family:'Sarabun',sans-serif;font-size:15px;font-weight:600;
+  border:none;border-radius:10px;cursor:pointer;transition:background .2s;
+}
+.success-close-btn:hover{background:var(--in3)}
+
 /* ===== RESPONSIVE ===== */
 @media(max-width:600px){
   .w{padding-bottom:2rem}
@@ -416,18 +468,34 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
     <div class="fi"><label class="fl">วันที่ <span>*</span></label><input class="fn" type="date" id="f-date"/></div>
     <div class="fi"><label class="fl">เวลา <span>*</span></label><input class="fn" type="time" id="f-time"/></div>
     <div class="fi f2" id="purpose-row"><label class="fl">วัตถุประสงค์</label><input class="fn" type="text" id="f-purpose" placeholder="ระบุวัตถุประสงค์การใช้งาน"/></div>
-    <div class="fi f2">
-      <label class="fl" id="proof-label">หลักฐานประกอบ <span>*</span> <span style="color:var(--mu);font-weight:400;font-size:12px">(เช่น รูปบัตรนิสิต)</span></label>
-      <div class="upload-area" id="upload-area" onclick="document.getElementById('f-proof').click()">
-        <i class="ti ti-photo-up" style="font-size:28px;color:var(--in);opacity:.7"></i>
-        <div style="font-size:13.5px;font-weight:500;color:var(--in3)">คลิกหรือลากไฟล์มาวางที่นี่</div>
+    <!-- BORROW: รูปบัตรนิสิต -->
+    <div class="fi f2" id="proof-borrow-row">
+      <label class="fl">รูปบัตรนิสิต <span>*</span> <span style="color:var(--mu);font-weight:400;font-size:12px">(ถ่ายให้เห็นหน้าบัตรนิสิตชัดเจน)</span></label>
+      <div class="upload-area" id="upload-area-borrow" onclick="document.getElementById('f-proof-borrow').click()">
+        <i class="ti ti-id" style="font-size:28px;color:var(--in);opacity:.7"></i>
+        <div style="font-size:13.5px;font-weight:500;color:var(--in3)">คลิกหรือลากรูปบัตรนิสิตมาวางที่นี่</div>
         <div style="font-size:12px;color:var(--mu)">รองรับ JPG, PNG, HEIC ขนาดไม่เกิน 5MB</div>
-        <input type="file" id="f-proof" accept="image/*" style="display:none" onchange="previewProof(event)"/>
+        <input type="file" id="f-proof-borrow" accept="image/*" style="display:none" onchange="previewProofBorrow(event)"/>
       </div>
-      <div id="proof-preview" style="display:none;margin-top:8px;position:relative">
-        <img id="proof-img" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;border:1.5px solid var(--br)"/>
-        <button onclick="clearProof()" style="position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,0.55);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px">✕</button>
-        <div id="proof-name" style="font-size:11px;color:var(--mu);margin-top:4px;text-align:center"></div>
+      <div id="proof-preview-borrow" style="display:none;margin-top:8px;position:relative">
+        <img id="proof-img-borrow" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;border:1.5px solid var(--br)"/>
+        <button onclick="clearProofBorrow()" style="position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,0.55);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px">✕</button>
+        <div id="proof-name-borrow" style="font-size:11px;color:var(--mu);margin-top:4px;text-align:center"></div>
+      </div>
+    </div>
+    <!-- RETURN: รูปสภาพสิ่งของที่คืน -->
+    <div class="fi f2" id="proof-return-row" style="display:none">
+      <label class="fl">รูปสภาพสิ่งของที่คืน <span>*</span> <span style="color:var(--mu);font-weight:400;font-size:12px">(ถ่ายให้เห็นสภาพอุปกรณ์ชัดเจน)</span></label>
+      <div class="upload-area" id="upload-area-return" onclick="document.getElementById('f-proof-return').click()">
+        <i class="ti ti-photo-up" style="font-size:28px;color:var(--in);opacity:.7"></i>
+        <div style="font-size:13.5px;font-weight:500;color:var(--in3)">คลิกหรือลากรูปสภาพอุปกรณ์มาวางที่นี่</div>
+        <div style="font-size:12px;color:var(--mu)">รองรับ JPG, PNG, HEIC ขนาดไม่เกิน 5MB</div>
+        <input type="file" id="f-proof-return" accept="image/*" style="display:none" onchange="previewProofReturn(event)"/>
+      </div>
+      <div id="proof-preview-return" style="display:none;margin-top:8px;position:relative">
+        <img id="proof-img-return" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;border:1.5px solid var(--br)"/>
+        <button onclick="clearProofReturn()" style="position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,0.55);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px">✕</button>
+        <div id="proof-name-return" style="font-size:11px;color:var(--mu);margin-top:4px;text-align:center"></div>
       </div>
     </div>
   </div>
@@ -442,7 +510,13 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
 
 <section class="pn" id="panel-status" role="tabpanel">
   <div class="st"><div class="sb"></div>รายการยืม-คืน</div>
-  <div class="my-status-info"><i class="ti ti-filter"></i>แสดงเฉพาะรายการของ <strong id="status-email-label"></strong></div>
+  <div class="my-status-info" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <span><i class="ti ti-filter"></i>แสดงเฉพาะรายการของ <strong id="status-email-label"></strong></span>
+    <span style="display:flex;align-items:center;gap:8px">
+      <span id="status-last-updated" style="font-size:11px;color:var(--mu)"></span>
+      <button onclick="loadStatus(true)" style="padding:4px 12px;background:var(--in);color:#fff;border:none;border-radius:6px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px"><i class="ti ti-refresh" style="font-size:13px"></i>รีเฟรช</button>
+    </span>
+  </div>
   <div class="sw2">
     <table class="tb">
       <thead><tr>
@@ -481,6 +555,26 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
 
 <footer class="ft"><strong>สโมสรนิสิต คณะรัฐศาสตร์ มหาวิทยาลัยบูรพา</strong><br>Faculty of Political Science · Burapha University</footer>
 </div><!-- end main-app -->
+
+<!-- SUCCESS MODAL -->
+<div id="success-modal">
+  <div class="success-box">
+    <div class="success-icon-wrap" id="success-icon-wrap">
+      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="18" stroke="#1a6b3a" stroke-width="2.5" fill="none"/>
+        <path d="M11 20 L17.5 27 L29 13" stroke="#1a6b3a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+          style="stroke-dasharray:60;stroke-dashoffset:60;animation:checkDraw .5s ease .3s forwards"/>
+      </svg>
+    </div>
+    <div class="success-title" id="success-title">ส่งคำขอสำเร็จ!</div>
+    <div id="success-status-wrap" style="margin-bottom:.5rem"></div>
+    <div class="success-msg" id="success-msg"></div>
+    <div class="success-detail" id="success-detail"></div>
+    <button class="success-close-btn" onclick="closeSuccessModal()">
+      <i class="ti ti-check" style="margin-right:6px"></i>รับทราบ
+    </button>
+  </div>
+</div>
 
 <script>
 // ========================================================
@@ -521,9 +615,12 @@ function doLogin(){
   document.getElementById('f-sid').value = studentId;
   document.getElementById('status-email-label').textContent = email;
 
-  rGrid('eq-grid', bQ, false);
-  rInv();
-  loadStatus();
+  loadEQ().then(()=>{
+    rGrid('eq-grid', bQ, false);
+    rGrid('ret-grid', rQ, true);
+    rInv();
+    loadStatus();
+  });
 }
 
 function doLogout(){
@@ -550,6 +647,13 @@ try {
     document.getElementById('f-email').value = currentUser.email;
     document.getElementById('f-sid').value = currentUser.studentId;
     document.getElementById('status-email-label').textContent = currentUser.email;
+    loadEQ().then(()=>{
+      rGrid('eq-grid', bQ, false);
+      rGrid('ret-grid', rQ, true);
+      rInv();
+      loadStatus();
+      startAutoRefresh();
+    });
   }
 } catch(_){}
 
@@ -576,11 +680,23 @@ const EQ_DEFAULT=[
   {id:'tri', name:'ขาตั้งกล้อง',icon:'ti-viewfinder',       total:3,borrowed:0,borrowCount:0},
   {id:'ban', name:'ผ้าแบนเนอร์',icon:'ti-flag',             total:5,borrowed:0,borrowCount:0},
 ];
-let EQ;
-try {
-  const saved = localStorage.getItem('eq_list');
-  EQ = saved ? JSON.parse(saved) : EQ_DEFAULT;
-} catch(e){ EQ = EQ_DEFAULT; }
+let EQ = [...EQ_DEFAULT];
+async function loadEQ(){
+  try {
+    const res = await fetch(SHEET_URL+'?action=getEquipment');
+    const data = await res.json();
+    if(data.equipment && data.equipment.length){
+      EQ = data.equipment;
+    } else {
+      // fallback to localStorage if Sheets not configured
+      const saved = localStorage.getItem('eq_list');
+      EQ = saved ? JSON.parse(saved) : EQ_DEFAULT;
+    }
+  } catch(e){
+    const saved = localStorage.getItem('eq_list');
+    EQ = saved ? JSON.parse(saved) : EQ_DEFAULT;
+  }
+}
 let mode='borrow',bQ={},rQ={};
 function av(e){return e.total-e.borrowed}
 function dc(e){const a=av(e);return a===0?'db':a<e.total?'dw':'dok'}
@@ -611,9 +727,29 @@ function cQ(id,isR,d){
   const e=EQ.find(x=>x.id===id);
   const mx=isR?e.borrowed:av(e);
   o[id]=Math.max(0,Math.min(mx,(o[id]||0)+d));
+  // อัปเดตตัวเลขในช่อง +/-
   document.getElementById((isR?'rq-':'bq-')+id).textContent=o[id];
   const c=document.getElementById((isR?'ret-':'eq-')+id);
-  if(c)c.className='ec'+(o[id]>0?' sl':'');
+  if(c){
+    c.className='ec'+(o[id]>0?' sl':'');
+    // อัปเดตตัวเลขคงเหลือ/กำลังยืมใน card ทันที
+    const avEl=c.querySelector('.av');
+    if(avEl){
+      if(isR){
+        // โหมดคืน: แสดง "กำลังยืม" = borrowed - selected
+        avEl.textContent='กำลังยืม: '+(e.borrowed - o[id])+' ชิ้น';
+      } else {
+        // โหมดยืม: แสดง "คงเหลือ" = av(e) - selected
+        avEl.textContent='คงเหลือ: '+(av(e) - o[id])+' ชิ้น';
+      }
+    }
+    // อัปเดตสีจุดสถานะ
+    const sd=c.querySelector('.sd');
+    if(sd && !isR){
+      const remaining = av(e) - o[id];
+      sd.className='sd '+(remaining===0?'db':remaining<e.total?'dw':'dok');
+    }
+  }
 }
 function rInv(){
   const g=document.getElementById('inv-grid');if(!g)return;g.innerHTML='';
@@ -638,10 +774,10 @@ function setMode(m){
   document.getElementById('return-section').style.display=m==='return'?'block':'none';
   document.getElementById('purpose-row').style.display=m==='borrow'?'flex':'none';
   document.getElementById('btn-label').textContent=m==='borrow'?'ส่งคำขอยืมอุปกรณ์':'ยืนยันการคืนอุปกรณ์';
-  document.getElementById('proof-label').innerHTML=m==='borrow'
-    ? 'หลักฐานประกอบ <span>*</span> <span style="color:var(--mu);font-weight:400;font-size:12px">(เช่น รูปบัตรนิสิต)</span>'
-    : 'รูปสภาพสิ่งของที่คืน <span>*</span> <span style="color:var(--mu);font-weight:400;font-size:12px">(ถ่ายให้เห็นสภาพอุปกรณ์ชัดเจน)</span>';
-  bQ={};rQ={};rGrid('eq-grid',bQ,false);rGrid('ret-grid',rQ,true);
+  document.getElementById('proof-borrow-row').style.display=m==='borrow'?'':'none';
+  document.getElementById('proof-return-row').style.display=m==='return'?'':'none';
+  bQ={};rQ={};
+  loadEQ().then(()=>{rGrid('eq-grid',bQ,false);rGrid('ret-grid',rQ,true);});
 }
 function sw(tab){
   document.querySelectorAll('.nt').forEach(t=>{t.classList.remove('on');t.setAttribute('aria-selected','false');});
@@ -670,12 +806,14 @@ async function doSubmit(){
   const dt=document.getElementById('f-date').value;
   const tm=document.getElementById('f-time').value;
   if(!nm||!sid||!mj||!yr||!tl||!em||!dt||!tm){alert('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');return;}
-  const proof=document.getElementById('f-proof');
+  const proofId = mode==='borrow' ? 'f-proof-borrow' : 'f-proof-return';
+  const uaId = mode==='borrow' ? 'upload-area-borrow' : 'upload-area-return';
+  const proof=document.getElementById(proofId);
   if(!proof.files||!proof.files.length){
-    const ua=document.getElementById('upload-area');
+    const ua=document.getElementById(uaId);
     ua.style.borderColor='#c0392b';ua.style.background='#fdeaea';
     setTimeout(()=>{ua.style.borderColor='';ua.style.background='';},2500);
-    alert('กรุณาแนบ'+(mode==='borrow'?'หลักฐาน (เช่น รูปบัตรนิสิต)':'รูปสภาพสิ่งของที่คืน')+' ก่อนส่งคำขอ');return;
+    alert('กรุณาแนบ'+(mode==='borrow'?'รูปบัตรนิสิต':'รูปสภาพสิ่งของที่คืน')+' ก่อนส่งคำขอ');return;
   }
   const q=mode==='borrow'?bQ:rQ;
   const items=EQ.filter(e=>(q[e.id]||0)>0);
@@ -698,7 +836,7 @@ async function doSubmit(){
     'จำนวน': items.map(e=>q[e.id]).join(', '),
     'วัตถุประสงค์': document.getElementById('f-purpose').value.trim(),
     'รูปใบรับรองสิทธิ์': await new Promise(resolve=>{
-      const file=document.getElementById('f-proof').files[0];
+      const file=document.getElementById(proofId).files[0];
       if(!file){resolve('');return;}
       const r=new FileReader();
       r.onload=ev=>resolve(ev.target.result);
@@ -724,18 +862,18 @@ function proceedSubmit(){
   const {payload, items, q} = pendingPayload;
   pendingPayload = null;
 
-  // Update qty
-  items.forEach(e=>{
-    const qv=q[e.id];
-    if(mode==='borrow'||payload.type==='ยืม'){
-      e.borrowed=Math.min(e.total,e.borrowed+qv);
-      e.borrowCount=(e.borrowCount||0)+qv;
-    } else {
+  // อัพเดตยอดอุปกรณ์: คืนแล้วให้ลด borrowed ทันที; ยืม = รอ admin อนุมัติ (ไม่เพิ่ม borrowed ทันที)
+  if(mode==='return'){
+    items.forEach(e=>{
+      const qv=q[e.id];
       e.borrowed=Math.max(0,e.borrowed-qv);
+    });
+    try{ localStorage.setItem('eq_list',JSON.stringify(EQ)); }catch(_){}
+    // Sync equipment back to Sheets
+    if(SHEET_URL!=='YOUR_APPS_SCRIPT_URL_HERE'){
+      fetch(SHEET_URL,{method:'POST',body:JSON.stringify({action:'saveEquipment',equipment:EQ})}).catch(()=>{});
     }
-  });
-  // Save updated EQ (borrowCount) to localStorage
-  try{ localStorage.setItem('eq_list',JSON.stringify(EQ)); }catch(_){}
+  }
 
   const btnEl=document.querySelector('.bs');
   const btnLabel=document.getElementById('btn-label');
@@ -757,16 +895,14 @@ function proceedSubmit(){
 
   sendToSheet.catch(()=>{}).finally(()=>{
     const tb=document.getElementById('status-body');
-    const d2=new Date(payload.date);
-    const thd=d2.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});
-    const ys=payload.year.replace('ชั้นปีที่ ','ปี ').replace(' ขึ้นไป','+');
-    const isBorrow = payload.type==='ยืม';
+    const isBorrow = payload['ประเภท']==='ยืม';
+    const ys=(payload['ชั้นปี']||'').replace('ชั้นปีที่ ','ปี ').replace(' ขึ้นไป','+');
     const row=document.createElement('tr');
-    row.innerHTML=`<td>${payload.name}<br><span style="color:var(--mu);font-size:11px">${payload.studentId} · ${ys}</span></td>
-      <td style="font-size:12px">${payload.major}</td>
-      <td>${payload.items}</td>
-      <td>${payload.quantities}</td>
-      <td>${thd}<br><span style="color:var(--mu);font-size:11px">${payload.time} น.</span></td>
+    row.innerHTML=`<td>${payload['ชื่อ นามสกุล']||''}<br><span style="color:var(--mu);font-size:11px">${payload['รหัสนิสิต']||''} · ${ys}</span></td>
+      <td style="font-size:12px">${payload['สาขา']||''}</td>
+      <td>${payload['อุปกรณ์']||''}</td>
+      <td>${payload['จำนวน']||''}</td>
+      <td>${payload['วันที่ยืม คืน']||''}<br><span style="color:var(--mu);font-size:11px">${payload['เวลา']||''} น.</span></td>
       <td><span class="bg2 ${isBorrow?'brd':'bin'}">
         <i class="ti ${isBorrow?'ti-clock-exclamation':'ti-circle-check'}"></i>
         ${isBorrow?'รอการอนุมัติ':'คืนแล้ว'}
@@ -776,63 +912,153 @@ function proceedSubmit(){
     if(firstRow) firstRow.parentElement.remove();
     tb.prepend(row);
 
-    const t=document.getElementById('toast-ok');
-    t.className='ts sh '+(isBorrow?'tok':'trt');
-    document.getElementById('toast-msg').textContent=isBorrow?'ส่งคำขอยืมเรียบร้อยแล้ว รอการอนุมัติจากผู้ดูแล':'บันทึกการคืนอุปกรณ์เรียบร้อยแล้ว';
-    setTimeout(()=>t.classList.remove('sh'),4000);
+    // Show success modal
+    showSuccessModal(isBorrow, payload);
+
     document.querySelectorAll('.fn:not([readonly])').forEach(el=>el.value='');
-    bQ={};rQ={};rGrid('eq-grid',bQ,false);rGrid('ret-grid',rQ,true);rInv();
-    clearProof();
+    bQ={};rQ={};loadEQ();rGrid('eq-grid',bQ,false);rGrid('ret-grid',rQ,true);rInv();
+    clearProofBorrow();clearProofReturn();
     btnEl.disabled=false;
     btnLabel.textContent=origLabel;
   });
 }
 
 // ========================================================
-// PROOF UPLOAD
+// SUCCESS MODAL
 // ========================================================
-function previewProof(e){
+function showSuccessModal(isBorrow, payload){
+  const iconWrap = document.getElementById('success-icon-wrap');
+  const title = document.getElementById('success-title');
+  const msg = document.getElementById('success-msg');
+  const statusWrap = document.getElementById('success-status-wrap');
+  const detail = document.getElementById('success-detail');
+
+  if(isBorrow){
+    iconWrap.className = 'success-icon-wrap';
+    iconWrap.innerHTML = `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="18" stroke="#7a4f00" stroke-width="2.5" fill="none"/>
+      <path d="M11 20 L17.5 27 L29 13" stroke="#7a4f00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+        style="stroke-dasharray:60;stroke-dashoffset:60;animation:checkDraw .5s ease .3s forwards"/>
+    </svg>`;
+    iconWrap.style.background = 'linear-gradient(135deg, #fff3cc, #ffe69c)';
+    title.textContent = 'ส่งคำขอยืมสำเร็จ!';
+    msg.textContent = 'ระบบได้รับคำขอของคุณแล้ว กรุณารอผู้ดูแลตรวจสอบและอนุมัติก่อนมารับอุปกรณ์';
+    statusWrap.innerHTML = `<span class="success-status-badge borrow"><i class="ti ti-clock-exclamation"></i>รอการอนุมัติ</span>`;
+  } else {
+    iconWrap.className = 'success-icon-wrap ret';
+    iconWrap.style.background = '';
+    iconWrap.innerHTML = `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="18" stroke="#1a6b3a" stroke-width="2.5" fill="none"/>
+      <path d="M11 20 L17.5 27 L29 13" stroke="#1a6b3a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+        style="stroke-dasharray:60;stroke-dashoffset:60;animation:checkDraw .5s ease .3s forwards"/>
+    </svg>`;
+    title.textContent = 'บันทึกการคืนสำเร็จ!';
+    msg.textContent = 'ระบบบันทึกการคืนอุปกรณ์เรียบร้อยแล้ว ขอบคุณที่ดูแลรักษาอุปกรณ์เป็นอย่างดี';
+    statusWrap.innerHTML = `<span class="success-status-badge ret"><i class="ti ti-circle-check"></i>คืนแล้ว</span>`;
+  }
+
+  const ys = (payload['ชั้นปี']||'').replace('ชั้นปีที่ ','ปี ').replace(' ขึ้นไป','+');
+  detail.innerHTML = `
+    <div class="success-detail-row"><span>ชื่อ</span><span>${payload['ชื่อ นามสกุล']||'-'}</span></div>
+    <div class="success-detail-row"><span>รหัสนิสิต</span><span>${payload['รหัสนิสิต']||'-'}</span></div>
+    <div class="success-detail-row"><span>สาขา</span><span>${payload['สาขา']||'-'} ${ys}</span></div>
+    <div class="success-detail-row"><span>อุปกรณ์</span><span>${payload['อุปกรณ์']||'-'}</span></div>
+    <div class="success-detail-row"><span>จำนวน</span><span>${payload['จำนวน']||'-'} ชิ้น</span></div>
+    <div class="success-detail-row"><span>วันที่/เวลา</span><span>${payload['วันที่ยืม คืน']||'-'} เวลา ${payload['เวลา']||''} น.</span></div>
+  `;
+
+  document.getElementById('success-modal').classList.add('sh');
+}
+
+function closeSuccessModal(){
+  document.getElementById('success-modal').classList.remove('sh');
+}
+
+// ========================================================
+// PROOF UPLOAD — แยกบัตรนิสิต vs หลักฐานคืน
+// ========================================================
+function previewProofBorrow(e){
   const file=e.target.files[0];
   if(!file)return;
   const reader=new FileReader();
   reader.onload=ev=>{
-    document.getElementById('proof-img').src=ev.target.result;
-    document.getElementById('proof-name').textContent=file.name;
-    document.getElementById('proof-preview').style.display='block';
-    document.getElementById('upload-area').style.display='none';
+    document.getElementById('proof-img-borrow').src=ev.target.result;
+    document.getElementById('proof-name-borrow').textContent=file.name;
+    document.getElementById('proof-preview-borrow').style.display='block';
+    document.getElementById('upload-area-borrow').style.display='none';
   };
   reader.readAsDataURL(file);
 }
-function clearProof(){
-  document.getElementById('f-proof').value='';
-  document.getElementById('proof-preview').style.display='none';
-  document.getElementById('upload-area').style.display='flex';
+function clearProofBorrow(){
+  document.getElementById('f-proof-borrow').value='';
+  document.getElementById('proof-preview-borrow').style.display='none';
+  document.getElementById('upload-area-borrow').style.display='flex';
 }
-const ua=document.getElementById('upload-area');
-ua.addEventListener('dragover',e=>{e.preventDefault();ua.style.borderColor='var(--in)';ua.style.background='var(--ib)'});
-ua.addEventListener('dragleave',()=>{ua.style.borderColor='';ua.style.background=''});
-ua.addEventListener('drop',e=>{
-  e.preventDefault();ua.style.borderColor='';ua.style.background='';
+function previewProofReturn(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    document.getElementById('proof-img-return').src=ev.target.result;
+    document.getElementById('proof-name-return').textContent=file.name;
+    document.getElementById('proof-preview-return').style.display='block';
+    document.getElementById('upload-area-return').style.display='none';
+  };
+  reader.readAsDataURL(file);
+}
+function clearProofReturn(){
+  document.getElementById('f-proof-return').value='';
+  document.getElementById('proof-preview-return').style.display='none';
+  document.getElementById('upload-area-return').style.display='flex';
+}
+// Drag-and-drop สำหรับบัตรนิสิต
+const uaBorrow=document.getElementById('upload-area-borrow');
+uaBorrow.addEventListener('dragover',e=>{e.preventDefault();uaBorrow.style.borderColor='var(--in)';uaBorrow.style.background='var(--ib)'});
+uaBorrow.addEventListener('dragleave',()=>{uaBorrow.style.borderColor='';uaBorrow.style.background=''});
+uaBorrow.addEventListener('drop',e=>{
+  e.preventDefault();uaBorrow.style.borderColor='';uaBorrow.style.background='';
   const file=e.dataTransfer.files[0];
   if(file&&file.type.startsWith('image/')){
-    const inp=document.getElementById('f-proof');
+    const inp=document.getElementById('f-proof-borrow');
     const dt=new DataTransfer();dt.items.add(file);inp.files=dt.files;
-    previewProof({target:{files:[file]}});
+    previewProofBorrow({target:{files:[file]}});
+  }
+});
+// Drag-and-drop สำหรับรูปสภาพอุปกรณ์
+const uaReturn=document.getElementById('upload-area-return');
+uaReturn.addEventListener('dragover',e=>{e.preventDefault();uaReturn.style.borderColor='var(--in)';uaReturn.style.background='var(--ib)'});
+uaReturn.addEventListener('dragleave',()=>{uaReturn.style.borderColor='';uaReturn.style.background=''});
+uaReturn.addEventListener('drop',e=>{
+  e.preventDefault();uaReturn.style.borderColor='';uaReturn.style.background='';
+  const file=e.dataTransfer.files[0];
+  if(file&&file.type.startsWith('image/')){
+    const inp=document.getElementById('f-proof-return');
+    const dt=new DataTransfer();dt.items.add(file);inp.files=dt.files;
+    previewProofReturn({target:{files:[file]}});
   }
 });
 
 // ========================================================
 // LOAD STATUS — filtered by current user email
 // ========================================================
-async function loadStatus(){
+async function loadStatus(showLoading){
   const tb=document.getElementById('status-body');
+  const lastEl=document.getElementById('status-last-updated');
+  if(showLoading && tb){
+    tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--mu);font-size:13px"><i class="ti ti-loader" style="font-size:20px;display:block;margin-bottom:4px"></i>กำลังโหลด...</td></tr>';
+  }
   try{
-    const res=await fetch(SHEET_URL+'?action=getAll&sheetName=system-borrow');
+    const res=await fetch(SHEET_URL+'?action=getAll&sheetName=system-borrow&_t='+Date.now());
     const data=await res.json();
     let rows=data.rows||[];
     // Filter by logged-in user email
     if(currentUser){
       rows = rows.filter(r => (r.email||'').toLowerCase() === currentUser.email.toLowerCase());
+    }
+    // Update last-updated label
+    if(lastEl){
+      const now = new Date();
+      lastEl.textContent = 'อัปเดต '+now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
     }
     if(!rows.length){
       tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--mu);font-size:14px"><i class="ti ti-inbox" style="font-size:22px;display:block;margin-bottom:6px"></i>ยังไม่มีรายการ</td></tr>';
@@ -841,31 +1067,100 @@ async function loadStatus(){
     tb.innerHTML=rows.map(r=>{
       const st=r.status||'รอการอนุมัติ';
       const badgeCls=st==='อนุมัติ'?'bok':st==='คืนแล้ว'?'bin':st==='ปฏิเสธ'?'brd':'brd';
-      const icon=st==='อนุมัติ'?'ti-clock':st==='คืนแล้ว'?'ti-circle-check':st==='ปฏิเสธ'?'ti-x':'ti-clock-exclamation';
+      const icon=st==='อนุมัติ'?'ti-check':st==='คืนแล้ว'?'ti-circle-check':st==='ปฏิเสธ'?'ti-x':'ti-clock-exclamation';
       const yr=(r.year||'').replace('ชั้นปีที่ ','ปี ').replace(' ขึ้นไป','+');
+      // ปุ่มคืนของ: แสดงเฉพาะเมื่อสถานะ "อนุมัติ" (ยืมแล้วยังไม่คืน)
+      const returnBtn = st==='อนุมัติ'
+        ? `<br><button onclick="goReturn()" style="margin-top:5px;padding:4px 10px;background:var(--in);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-arrow-back-up" style="font-size:12px"></i>คืนของ</button>`
+        : '';
       return`<tr>
         <td>${r.name||''}<br><span style="color:var(--mu);font-size:11px">${r.studentId||''} · ${yr}</span></td>
         <td style="font-size:12px">${r.major||''}</td>
         <td>${r.items||''}</td>
         <td>${r.quantities||''}</td>
         <td>${r.date||''}<br><span style="color:var(--mu);font-size:11px">${r.time||''} น.</span></td>
-        <td><span class="bg2 ${badgeCls}"><i class="ti ${icon}"></i>${st}</span></td>
+        <td><span class="bg2 ${badgeCls}"><i class="ti ${icon}"></i>${st}</span>${returnBtn}</td>
       </tr>`;
+
     }).join('');
   }catch(e){
     tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:#c0392b;font-size:13px">⚠️ โหลดข้อมูลไม่ได้</td></tr>';
   }
 }
 
-// Auto-refresh every 30s when on status tab
+// ========================================================
+// GO RETURN — shortcut จาก status tab ไปที่โหมดคืนของ
+// ========================================================
+function goReturn(){
+  // Switch to borrow tab
+  sw('borrow');
+  // Set mode to return
+  setMode('return');
+  // Reload equipment to get latest borrowed counts, then scroll
+  loadEQ().then(()=>{
+    rGrid('ret-grid', rQ, true);
+    rInv();
+    // Scroll to return section
+    setTimeout(()=>{
+      const el = document.getElementById('return-section');
+      if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 200);
+  });
+}
+
+// ========================================================
+// AUTO-REFRESH: sync equipment & status from Sheets
+// ========================================================
+let _refreshTimer = null;
+function startAutoRefresh(){
+  if(_refreshTimer) clearInterval(_refreshTimer);
+  _refreshTimer = setInterval(async ()=>{
+    // Refresh equipment (เพื่อดูยอดล่าสุดหลัง admin อนุมัติ)
+    const oldEQ = JSON.stringify(EQ);
+    await loadEQ();
+    const newEQ = JSON.stringify(EQ);
+    if(oldEQ !== newEQ){
+      // Equipment changed — re-render grids
+      rGrid('eq-grid', bQ, false);
+      rGrid('ret-grid', rQ, true);
+      rInv();
+      // Also refresh status so "คืนของ" button updates
+      loadStatus();
+      // Show brief sync notification
+      _showSyncBadge('🔄 ข้อมูลอุปกรณ์อัปเดตแล้ว');
+    }
+    // Refresh status if on status tab
+    if(document.getElementById('panel-status')?.classList.contains('on')){
+      loadStatus();
+    }
+  }, 30000); // every 30 seconds
+}
+function _showSyncBadge(msg){
+  let el = document.getElementById('_sync-badge');
+  if(!el){
+    el = document.createElement('div');
+    el.id = '_sync-badge';
+    el.style.cssText='position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--in4);color:#fff;padding:7px 18px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--inl);z-index:9999;transition:opacity .4s;pointer-events:none';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity='1';
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>{ el.style.opacity='0'; }, 2500);
+}
+
+// Auto-refresh every 30s when on status tab (legacy kept)
 setInterval(()=>{
   if(document.getElementById('panel-status')?.classList.contains('on')) loadStatus();
 },30000);
 
 // Init grids if already logged in
 if(currentUser){
-  rGrid('eq-grid',bQ,false);rInv();
-  loadStatus();
+  loadEQ().then(()=>{
+    rGrid('eq-grid',bQ,false);rGrid('ret-grid',rQ,true);rInv();
+    loadStatus();
+    startAutoRefresh();
+  });
 }
 </script>
 </html>

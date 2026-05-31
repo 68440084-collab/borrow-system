@@ -263,7 +263,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx)}
     <div class="pn" id="panel-req">
       <div class="stats" id="stat-cards" style="grid-template-columns:repeat(4,1fr)"></div>
       <div id="borrow-count-table"></div>
-      <div class="st"><div class="sb"></div>รายการคำขอยืมอุปกรณ์</div>
+      <div class="st" style="justify-content:space-between;flex-wrap:wrap;gap:8px"><span style="display:flex;align-items:center;gap:8px"><div class="sb"></div>รายการคำขอยืมอุปกรณ์</span><span style="display:flex;align-items:center;gap:8px"><span id="req-last-updated" style="font-size:11px;color:rgba(176,28,28,.5)"></span><button onclick="renderReqs()" style="padding:5px 14px;background:var(--in);color:#fff;border:none;border-radius:6px;font-family:Sarabun,sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px"><i class="ti ti-refresh" style="font-size:13px"></i>รีเฟรช</button></span></div>
       <div class="sw2">
         <table class="tb">
           <thead><tr>
@@ -396,13 +396,32 @@ const EQ_DEFAULT=[
 ];
 let EQ=[];
 
-function loadEq(){
-  try{ const s=localStorage.getItem(EQ_KEY); EQ=s?JSON.parse(s):[...EQ_DEFAULT]; }
-  catch(e){ EQ=[...EQ_DEFAULT]; }
+async function loadEq(){
+  try{
+    const res = await fetch(SHEET_URL+'?action=getEquipment');
+    const data = await res.json();
+    if(data.equipment && data.equipment.length){
+      EQ = data.equipment;
+      localStorage.setItem(EQ_KEY,JSON.stringify(EQ));
+    } else {
+      const s=localStorage.getItem(EQ_KEY); EQ=s?JSON.parse(s):[...EQ_DEFAULT];
+    }
+  } catch(e){
+    const s=localStorage.getItem(EQ_KEY); EQ=s?JSON.parse(s):[...EQ_DEFAULT];
+  }
 }
-function saveEq(){
+async function saveEq(){
   localStorage.setItem(EQ_KEY,JSON.stringify(EQ));
-  showToast('บันทึกรายการอุปกรณ์แล้ว ✅');
+  if(SHEET_URL!=='YOUR_APPS_SCRIPT_URL_HERE'){
+    try{
+      await fetch(SHEET_URL,{method:'POST',body:JSON.stringify({action:'saveEquipment',equipment:EQ})});
+      showToast('บันทึกรายการอุปกรณ์แล้ว ✅ (ซิงค์ Sheets)');
+    } catch(e){
+      showToast('บันทึกในเครื่องแล้ว (Sheets ไม่ตอบสนอง)');
+    }
+  } else {
+    showToast('บันทึกรายการอุปกรณ์แล้ว ✅');
+  }
 }
 function renderEqGrid(){
   const g=document.getElementById('eq-grid');
@@ -473,7 +492,7 @@ async function loadReqs(){
   const tb=document.getElementById('req-body');
   tb.innerHTML='<tr><td colspan="7" class="empty"><i class="ti ti-loader" style="font-size:24px;display:block;margin-bottom:6px"></i>กำลังโหลด...</td></tr>';
   try{
-    const res = await fetch(SHEET_URL+'?action=getAll&sheetName=system-borrow');
+    const res = await fetch(SHEET_URL+'?action=getAll&sheetName=system-borrow&_t='+Date.now());
     const data = await res.json();
     return data.rows || [];
   }catch(e){
@@ -485,6 +504,9 @@ async function loadReqs(){
 async function renderReqs(){
   const reqs = await loadReqs();
   const tb=document.getElementById('req-body');
+  // Update last-updated label
+  const lu=document.getElementById('req-last-updated');
+  if(lu){ const n=new Date(); lu.textContent='อัปเดต '+n.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}); }
   const waiting=reqs.filter(r=>r.status==='รอการอนุมัติ').length;
   const approved=reqs.filter(r=>r.status==='อนุมัติ').length;
   const returned=reqs.filter(r=>r.status==='คืนแล้ว').length;
@@ -547,8 +569,48 @@ async function renderReqs(){
 async function setStatus(row, status){
   showToast('กำลังอัปเดต...');
   try{
+    // Get the request data to know which items are being borrowed
+    const reqs = await loadReqs();
+    const req = reqs.find(r=>r.row===row);
+
     await fetch(SHEET_URL, {method:'POST', body: JSON.stringify({action:'updateStatus', sheetName:'system-borrow', row, status})});
-    showToast(status==='อนุมัติ'?'อนุมัติคำขอแล้ว ✅':'ปฏิเสธคำขอแล้ว');
+
+    // If approving a borrow request, update borrowed count in equipment list
+    if(status==='อนุมัติ' && req && req.type==='ยืม'){
+      await loadEq();
+      const itemNames = (req.items||'').split(',').map(s=>s.trim());
+      const qtys = (req.quantities||'').split(',').map(s=>parseInt(s.trim())||0);
+      itemNames.forEach((name,i)=>{
+        const eq = EQ.find(e=>e.name===name);
+        if(eq){
+          eq.borrowed = (eq.borrowed||0) + (qtys[i]||0);
+          eq.borrowCount = (eq.borrowCount||0) + (qtys[i]||0);
+        }
+      });
+      localStorage.setItem(EQ_KEY, JSON.stringify(EQ));
+      if(SHEET_URL!=='YOUR_APPS_SCRIPT_URL_HERE'){
+        fetch(SHEET_URL,{method:'POST',body:JSON.stringify({action:'saveEquipment',equipment:EQ})}).catch(()=>{});
+      }
+    }
+
+    // If approving a return request (status = คืนแล้ว via admin), update borrowed down
+    if(status==='คืนแล้ว' && req && req.type==='คืน'){
+      await loadEq();
+      const itemNames = (req.items||'').split(',').map(s=>s.trim());
+      const qtys = (req.quantities||'').split(',').map(s=>parseInt(s.trim())||0);
+      itemNames.forEach((name,i)=>{
+        const eq = EQ.find(e=>e.name===name);
+        if(eq){
+          eq.borrowed = Math.max(0,(eq.borrowed||0) - (qtys[i]||0));
+        }
+      });
+      localStorage.setItem(EQ_KEY, JSON.stringify(EQ));
+      if(SHEET_URL!=='YOUR_APPS_SCRIPT_URL_HERE'){
+        fetch(SHEET_URL,{method:'POST',body:JSON.stringify({action:'saveEquipment',equipment:EQ})}).catch(()=>{});
+      }
+    }
+
+    showToast(status==='อนุมัติ'?'อนุมัติคำขอแล้ว ✅ (อัปเดตคงเหลือแล้ว)':status==='ปฏิเสธ'?'ปฏิเสธคำขอแล้ว':'อัปเดตสถานะแล้ว');
     renderReqs();
   }catch(e){ showToast('เกิดข้อผิดพลาด ลองใหม่อีกครั้ง'); }
 }
@@ -575,7 +637,7 @@ function showToast(msg){
 }
 
 // ========= INIT =========
-function loadAll(){ loadEq(); renderEqGrid(); }
+async function loadAll(){ await loadEq(); renderEqGrid(); }
 </script>
 </body>
 </html>
