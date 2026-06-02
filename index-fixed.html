@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ระบบยืม-คืนอุปกรณ์ คณะรัฐศาสตร์ มบูรพา</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&family=Noto+Serif+Thai:wght@700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --in:#B01C1C;--in2:#C82020;--in3:#8B1A1A;--in4:#6B0A0A;--in5:#4A0606;
+  --inl:#E8B7B7;--gold:#E8B7B7;--gold2:#D78E8E;--gold3:#f0dcdc;--gp:#f9eeee;
+  --bg:#f9eeee;--wh:#fff;--tx:#3a0d0d;--mu:#B01C1C;
+  --ok:#1a6b3a;--okb:#e4f5ec;--wn:#7a4f00;--wnb:#fff3cc;
+  --rd:#8b1a1a;--rdb:#fdeaea;--ib:#f5dcdc;--it:#741F1F;
+  --br:rgba(176,28,28,0.18);
+}
+body{font-family:'Sarabun',sans-serif;background:var(--bg)}
+.w{max-width:860px;margin:0 auto;padding-bottom:3rem}
+@keyframes loginFadeIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes gridPulse{0%,100%{opacity:.18}50%{opacity:.32}}
+@keyframes logoBreathe{0%,100%{box-shadow:0 0 0 0 rgba(232,183,183,0)}50%{box-shadow:0 0 0 10px rgba(232,183,183,.18)}}
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+#login-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--in5);background-image:linear-gradient(45deg,rgba(201,164,53,.15) 1px,transparent 1px),linear-gradient(-45deg,rgba(201,164,53,.15) 1px,transparent 1px);background-size:32px 32px;overflow:hidden}
+#login-overlay::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 60%,rgba(176,28,28,.35) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(100,10,10,.4) 0%,transparent 50%);pointer-events:none;animation:gridPulse 5s ease-in-out infinite}
+.login-box{background:rgba(255,255,255,0.06);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(232,183,183,.22);border-radius:20px;padding:2.8rem 2.2rem;max-width:380px;width:92%;text-align:center;position:relative;animation:loginFadeIn .55s cubic-bezier(.22,1,.36,1) both;box-shadow:0 24px 64px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08)}
+.login-logo{width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.2rem;background:rgba(255,255,255,0.07);border:2px solid rgba(232,183,183,.35);padding:6px;overflow:hidden;animation:logoBreathe 3.5s ease-in-out infinite,float 4s ease-in-out infinite}
+.login-logo img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.login-title{font-family:'Noto Serif Thai',serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:4px;text-shadow:0 1px 8px rgba(0,0,0,.4)}
+.login-sub{font-size:12px;color:rgba(240,212,106,.75);margin-bottom:1.8rem;line-height:1.65}
+.login-label{font-size:13px;color:rgba(240,212,106,.85);text-align:left;display:block;margin-bottom:6px;font-weight:500}
+.login-input{width:100%;padding:11px 14px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(232,183,183,.22);border-radius:10px;font-family:'Sarabun',sans-serif;font-size:14px;color:#fff;transition:border-color .25s,background .25s,box-shadow .25s;margin-bottom:1.1rem}
+.login-input::placeholder{color:rgba(232,183,183,.4)}
+.login-input:focus{outline:none;border-color:rgba(232,183,183,.7);background:rgba(255,255,255,.11);box-shadow:0 0 0 3px rgba(176,28,28,.25)}
+.login-btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--in2),var(--in));color:#fff;font-family:'Sarabun',sans-serif;font-size:15px;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:transform .18s,box-shadow .18s,filter .18s;box-shadow:0 4px 18px rgba(176,28,28,.55);position:relative;overflow:hidden}
+.login-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.18) 50%,transparent 100%);background-size:200% auto;animation:shimmer 2.5s linear infinite}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(176,28,28,.7);filter:brightness(1.1)}
+.login-btn:active{transform:translateY(0);box-shadow:0 2px 10px rgba(176,28,28,.4)}
+.login-err{display:none;background:rgba(139,26,26,.35);border:1px solid rgba(200,32,32,.45);color:#ffbbbb;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:1rem;text-align:left;animation:loginFadeIn .3s ease both}
+.login-err.sh{display:block}
+.login-note{font-size:11.5px;color:rgba(240,212,106,.45);margin-top:1rem}
+#user-bar{background:var(--in4);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;font-size:13px;color:rgba(183,195,232,0.9);border-bottom:1px solid rgba(201,164,53,0.2)}
+#user-bar span{display:flex;align-items:center;gap:6px}
+#user-bar i{font-size:15px;color:var(--gold2)}
+.logout-btn{background:rgba(201,164,53,0.12);border:1px solid rgba(201,164,53,0.25);color:rgba(240,212,106,.8);padding:4px 12px;border-radius:6px;font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer;transition:all .2s}
+.logout-btn:hover{background:rgba(201,164,53,0.25);color:#fff}
+#confirm-modal{position:fixed;inset:0;background:rgba(8,31,68,0.7);z-index:8000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+#confirm-modal.sh{display:flex}
+.confirm-box{background:#fff;border-radius:16px;padding:2rem;max-width:420px;width:92%;box-shadow:0 20px 60px rgba(8,31,68,0.3)}
+.confirm-title{font-size:16px;font-weight:700;color:var(--in5);margin-bottom:.5rem;display:flex;align-items:center;gap:8px}
+.confirm-title i{color:var(--in);font-size:20px}
+.confirm-sub{font-size:13.5px;color:var(--mu);line-height:1.6;margin-bottom:1.2rem}
+.confirm-check-row{display:flex;align-items:flex-start;gap:10px;background:var(--ib);border-radius:10px;padding:12px;margin-bottom:1.2rem;cursor:pointer}
+.confirm-check-row input[type=checkbox]{width:17px;height:17px;accent-color:var(--in);flex-shrink:0;margin-top:2px;cursor:pointer}
+.confirm-check-label{font-size:13px;color:var(--in3);line-height:1.55;cursor:pointer}
+.confirm-btns{display:flex;gap:8px}
+.confirm-cancel{flex:1;padding:10px;background:#f3f2fb;color:var(--mu);border:1.5px solid var(--br);border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:500;cursor:pointer}
+.confirm-cancel:hover{background:#e5e4f5}
+.confirm-ok{flex:2;padding:10px;background:var(--in);color:#fff;border:none;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
+.confirm-ok:hover{background:var(--in3)}
+.confirm-ok:disabled{background:#9bb2d6;cursor:not-allowed}
+.hdr{background:var(--in5);position:relative;overflow:hidden}
+.hdr-bg{position:absolute;inset:0;background-image:linear-gradient(45deg,rgba(201,164,53,.2) 1px,transparent 1px),linear-gradient(-45deg,rgba(201,164,53,.2) 1px,transparent 1px),linear-gradient(45deg,transparent 50%,rgba(201,164,53,.04) 50%),linear-gradient(-45deg,transparent 50%,rgba(201,164,53,.04) 50%);background-size:28px 28px}
+.hdr-bg2{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(61,59,142,0) 40%,rgba(13,11,60,.55) 100%)}
+.hs{display:none}
+.hb{padding:1.4rem 1.5rem 1.2rem;display:flex;align-items:center;gap:1.2rem;justify-content:center;position:relative;z-index:2}
+.hc{text-align:center}
+.hf{font-size:11px;font-weight:600;letter-spacing:.8px;color:rgba(240,212,106,.75);margin-bottom:5px;text-transform:uppercase}
+.ht{font-family:'Noto Serif Thai',serif;font-size:22px;font-weight:700;color:var(--wh);line-height:1.35}
+.hsu{font-size:12px;color:rgba(240,212,106,.75);margin-top:5px}
+.hbadge{display:inline-block;background:var(--gold);color:var(--in5);font-size:11px;font-weight:700;padding:3px 14px;border-radius:20px;margin-bottom:8px;letter-spacing:.3px;white-space:nowrap}
+.hr{height:3px;background:var(--gold);position:relative;z-index:2}
+.nav{display:flex;background:var(--in3);border-bottom:2.5px solid var(--gold)}
+.nt{flex:1;padding:12px 4px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);cursor:pointer;border:none;background:none;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.nt:hover{color:var(--wh);background:rgba(255,255,255,0.07)}
+.nt.on{color:var(--gold3);border-bottom-color:var(--gold);background:rgba(255,255,255,.06);font-weight:600}
+.nt i{font-size:16px}
+.pn{display:none;padding:1.3rem}
+.pn.on{display:block}
+.st{font-size:15px;font-weight:600;color:var(--in3);display:flex;align-items:center;gap:8px;margin-bottom:1rem}
+.sb{width:4px;height:20px;background:linear-gradient(to bottom,var(--inl),var(--in3));border-radius:2px;flex-shrink:0}
+.mr{display:flex;gap:8px;margin-bottom:1.2rem}
+.mb{flex:1;padding:10px;border:1.5px solid var(--br);border-radius:8px;background:var(--wh);font-family:'Sarabun',sans-serif;font-size:13.5px;font-weight:500;color:var(--mu);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.mb:hover{border-color:var(--in);color:var(--in)}
+.mb.on{background:var(--in);color:var(--wh);border-color:var(--in)}
+.mb i{font-size:17px}
+.eg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:.8rem}
+.ec{border:1.5px solid var(--br);border-radius:10px;padding:10px 8px;cursor:pointer;transition:all .2s;text-align:center;background:var(--wh);display:flex;flex-direction:column;align-items:center;gap:6px;position:relative}
+.ec:hover{border-color:var(--in);background:var(--ib)}
+.ec.sl{border-color:var(--in);background:var(--gp)}
+.ec i.ei{font-size:22px;color:var(--in)}
+.ec.sl i.ei{color:var(--in4)}
+.sd{width:8px;height:8px;border-radius:50%;position:absolute;top:8px;right:8px}
+.dok{background:#27ae60}.dw{background:#e67e22}.db{background:#c0392b}
+.av{font-size:11px;color:var(--mu)}
+.qr{display:flex;align-items:center;gap:7px;margin-top:3px}
+.qb{width:26px;height:26px;border:1.5px solid var(--br);border-radius:6px;background:var(--in);color:var(--wh);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:600}
+.qb:hover{background:var(--in3)}
+.qn{width:28px;text-align:center;font-size:14px;font-weight:600;color:var(--in)}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.fi{display:flex;flex-direction:column;gap:5px}
+.fi.f2{grid-column:1/-1}
+.fl{font-size:13px;font-weight:500;color:var(--in3)}
+.fl span{color:#c0392b;margin-left:2px}
+.fn{padding:9px 12px;border:1.5px solid var(--br);border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;background:var(--wh);color:var(--tx);transition:border-color .2s}
+.fn:focus{outline:none;border-color:var(--in)}
+.bs{width:100%;padding:12px;background:var(--in);color:var(--wh);font-family:'Sarabun',sans-serif;font-size:15px;font-weight:600;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.bs:hover{background:var(--in3)}
+.bs i{font-size:19px}
+.ts{display:none;border-radius:10px;padding:10px 14px;margin-bottom:1rem;font-size:13.5px;font-weight:500;align-items:center;gap:8px}
+.ts.sh{display:flex}
+.tok{background:var(--okb);color:var(--ok)}
+.trt{background:var(--ib);color:var(--it)}
+.ig{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.3rem}
+.ic{background:var(--wh);border:1.5px solid var(--br);border-radius:10px;padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:5px}
+.ii{width:42px;height:42px;border-radius:50%;background:var(--in);display:flex;align-items:center;justify-content:center}
+.ii i{font-size:20px;color:var(--wh)}
+.in2{font-size:13px;font-weight:500;color:var(--tx);text-align:center}
+.ibg{font-size:22px;font-weight:700;color:var(--in)}
+.ism{font-size:11px;color:var(--mu)}
+.ibw{width:100%;height:5px;background:var(--ib);border-radius:3px;overflow:hidden}
+.ibf{height:100%;border-radius:3px}
+.sw2{background:var(--wh);border:0.5px solid var(--br);border-radius:12px;overflow:auto;margin-bottom:1rem}
+.tb{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.tb th{background:var(--in4);color:var(--wh);padding:9px 11px;font-weight:500;font-size:12px;text-align:left}
+.tb td{padding:9px 11px;border-bottom:0.5px solid var(--br);color:var(--tx);vertical-align:middle;overflow:hidden;text-overflow:ellipsis}
+.tb tr:last-child td{border-bottom:none}
+.tb tr:hover td{background:var(--gp)}
+.bg2{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.bok{background:var(--okb);color:var(--ok)}
+.bwn{background:var(--wnb);color:var(--wn)}
+.brd{background:var(--rdb);color:var(--rd)}
+.bin{background:var(--ib);color:var(--it)}
+.bg2 i{font-size:12px}
+.my-status-info{background:var(--ib);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--in3);margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.my-status-info i{font-size:16px;color:var(--in)}
+.ri2{background:linear-gradient(135deg,var(--in3),var(--in4));border-radius:12px;padding:1.2rem;margin-bottom:1.2rem;color:var(--wh);font-size:14px;line-height:1.7;display:flex;gap:12px}
+.ri2 i.shield{font-size:26px;color:var(--inl);flex-shrink:0;margin-top:2px}
+.rl{display:flex;flex-direction:column;gap:8px}
+.rr{background:var(--wh);border:0.5px solid var(--br);border-radius:10px;padding:11px 13px;display:flex;align-items:flex-start;gap:10px}
+.rr.hl{border-left:3px solid var(--in2);border-radius:0 10px 10px 0}
+.rr.st2{border-left:3px solid #c0392b;border-radius:0 10px 10px 0}
+.rn{min-width:26px;height:26px;border-radius:50%;background:var(--in);color:var(--wh);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rn.g{background:var(--in3);color:#fff}
+.rn.r{background:var(--in4);color:#fff}
+.rtx{font-size:13.5px;color:var(--tx);line-height:1.6;padding-top:2px}
+.ft{background:var(--in5);color:rgba(183,195,232,0.5);text-align:center;font-size:12px;padding:13px;border-top:2.5px solid var(--in3)}
+.ft strong{color:var(--inl)}
+.lg{display:flex;gap:12px;margin-bottom:1rem;font-size:12px;color:var(--mu);flex-wrap:wrap}
+.ld{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
+.upload-area{border:1.5px dashed var(--br);border-radius:10px;background:var(--wh);padding:18px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all .2s}
+.upload-area:hover{border-color:var(--in);background:var(--ib)}
+@keyframes successPop{0%{opacity:0;transform:scale(.85) translateY(20px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes checkDraw{0%{stroke-dashoffset:60}100%{stroke-dashoffset:0}}
+@keyframes circlePulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+#success-modal{position:fixed;inset:0;background:rgba(8,0,0,0.65);z-index:9500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+#success-modal.sh{display:flex}
+.success-box{background:#fff;border-radius:20px;padding:2.2rem 1.8rem 1.8rem;max-width:400px;width:92%;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.35);animation:successPop .45s cubic-bezier(.22,1,.36,1) both;position:relative;overflow:hidden}
+.success-box::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--in3),var(--in2),var(--in))}
+.success-icon-wrap{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--okb),#c8f0d8);display:flex;align-items:center;justify-content:center;margin:0 auto 1.1rem;animation:circlePulse 1.2s ease-in-out 1}
+.success-icon-wrap.ret{background:linear-gradient(135deg,var(--ib),#f0d0d0)}
+.success-icon-wrap svg{width:40px;height:40px}
+.success-title{font-size:19px;font-weight:700;color:var(--in4);margin-bottom:.4rem}
+.success-msg{font-size:13.5px;color:var(--mu);line-height:1.65;margin-bottom:1.4rem}
+.success-detail{background:var(--gp);border:1px solid var(--br);border-radius:10px;padding:12px 14px;margin-bottom:1.4rem;text-align:left}
+.success-detail-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12.5px;border-bottom:0.5px solid var(--br)}
+.success-detail-row:last-child{border-bottom:none;padding-bottom:0}
+.success-detail-row span:first-child{color:var(--mu);font-weight:500}
+.success-detail-row span:last-child{color:var(--in4);font-weight:600;text-align:right;max-width:60%}
+.success-status-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:1.4rem}
+.success-status-badge.borrow{background:var(--wnb);color:var(--wn)}
+.success-status-badge.ret{background:var(--okb);color:var(--ok)}
+.success-close-btn{width:100%;padding:12px;background:var(--in);color:#fff;font-family:'Sarabun',sans-serif;font-size:15px;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:background .2s}
+.success-close-btn:hover{background:var(--in3)}
+@media(max-width:600px){
+  .w{padding-bottom:2rem}
+  .hb{padding:1rem;gap:.8rem}
+  .ht{font-size:17px}
+  .hsu{font-size:11px}
+  .nav{overflow-x:auto}
+  .nt{font-size:11px;padding:10px 6px;gap:3px;min-width:70px}
+  .nt i{font-size:14px}
+  .pn{padding:1rem .8rem}
+  .eg{grid-template-columns:repeat(2,1fr);gap:7px}
+  .ec{padding:8px 6px;font-size:12px}
+  .ec i.ei{font-size:18px}
+  .fg2{grid-template-columns:1fr}
+  .fi.f2{grid-column:auto}
+  .ig{grid-template-columns:repeat(2,1fr)}
+  .sw2{font-size:12px}
+  .tb th,.tb td{padding:7px 8px;font-size:11px}
+  .mr{flex-direction:column;gap:6px}
+  .mb{padding:9px}
+  .bs{font-size:14px;padding:11px}
+  .ri2{flex-direction:column;gap:8px}
+}
+@media(min-width:601px) and (max-width:860px){
+  .w{padding-left:1rem;padding-right:1rem}
+  .eg{grid-template-columns:repeat(3,1fr)}
+  .ig{grid-template-columns:repeat(3,1fr)}
+  .fg2{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23B01C1C' width='100' height='100'/%3E%3Ctext x='50' y='55' font-size='50' fill='%23fff' text-anchor='middle' font-family='serif' font-weight='bold'%3EBUU%3C/text%3E%3C/svg%3E" alt="logo"/>
+    <div class="login-title">ระบบยืม-คืนอุปกรณ์</div>
+    <div class="login-sub">คณะรัฐศาสตร์ มหาวิทยาลัยบูรพา<br>กรุณาเข้าสู่ระบบด้วยอีเมลมหาวิทยาลัย</div>
+    <div class="login-err" id="login-err"></div>
+    <label class="login-label">อีเมลมหาวิทยาลัย (@go.buu.ac.th)</label>
+    <input class="login-input" type="email" id="login-email" placeholder="xxxxx@go.buu.ac.th" autocomplete="email"/>
+    <button class="login-btn" onclick="doLogin()"><i class="ti ti-login"></i>เข้าสู่ระบบ</button>
+    <div class="login-note">* ใช้ได้เฉพาะอีเมล @go.buu.ac.th เท่านั้น</div>
+  </div>
+</div>
+
+<div id="confirm-modal">
+  <div class="confirm-box">
+    <div class="confirm-title"><i class="ti ti-shield-check"></i>ยืนยันการส่งคำขอยืม</div>
+    <div class="confirm-sub">กรุณาอ่านและยอมรับกฎกติกาก่อนดำเนินการยืมอุปกรณ์</div>
+    <label class="confirm-check-row">
+      <input type="checkbox" id="agree-check" onchange="toggleConfirmBtn()"/>
+      <span class="confirm-check-label">ข้าพเจ้าได้อ่านกฎ-กติกาการยืม-คืนอุปกรณ์และยอมรับเงื่อนไขข้างต้น</span>
+    </label>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="closeConfirm()">ยกเลิก</button>
+      <button class="confirm-ok" id="confirm-ok-btn" disabled onclick="proceedSubmit()"><i class="ti ti-send"></i>ยืนยันและส่งคำขอ</button>
+    </div>
+  </div>
+</div>
+
+<div class="w" id="main-app" style="display:none">
+<div id="user-bar">
+  <span><i class="ti ti-user-circle"></i><span id="user-email-display"></span></span>
+  <button class="logout-btn" onclick="doLogout()"><i class="ti ti-logout"></i>ออกจากระบบ</button>
+</div>
+
+<header class="hdr">
+  <div class="hdr-bg"></div>
+  <div class="hdr-bg2"></div>
+  <div class="hb">
+    <div class="hc">
+      <div class="hbadge">สโมสรนิสิตคณะรัฐศาสตร์</div>
+      <div class="ht">ระบบยืม-คืนอุปกรณ์</div>
+      <div class="hsu">Faculty of Political Science — Burapha University</div>
+    </div>
+  </div>
+  <div class="hr"></div>
+</header>
+
+<nav class="nav" role="tablist">
+  <button class="nt on" onclick="sw('borrow')" role="tab"><i class="ti ti-clipboard-list"></i>ยืม-คืน</button>
+  <button class="nt" onclick="sw('inv')" role="tab"><i class="ti ti-box"></i>คลังอุปกรณ์</button>
+  <button class="nt" onclick="sw('status')" role="tab"><i class="ti ti-list-check"></i>สถานะ</button>
+  <button class="nt" onclick="sw('rules')" role="tab"><i class="ti ti-shield-check"></i>กฎกติกา</button>
+</nav>
+
+<section class="pn on" id="panel-borrow" role="tabpanel">
+  <div class="mr">
+    <button class="mb on" id="btn-borrow" onclick="setMode('borrow')"><i class="ti ti-arrow-right"></i>ยืมอุปกรณ์</button>
+    <button class="mb" id="btn-return" onclick="setMode('return')"><i class="ti ti-arrow-left"></i>คืนอุปกรณ์</button>
+  </div>
+  <div id="toast-ok" class="ts tok"><i class="ti ti-circle-check"></i><span id="toast-msg">ส่งคำขอเรียบร้อยแล้ว</span></div>
+  <div id="borrow-section">
+    <div class="st"><div class="sb"></div>เลือกอุปกรณ์และจำนวนที่ต้องการยืม</div>
+    <div class="eg" id="eq-grid"></div>
+    <div class="lg">
+      <span><span class="ld" style="background:#27ae60"></span>พร้อมให้ยืม</span>
+      <span><span class="ld" style="background:#e67e22"></span>มีบางส่วน</span>
+      <span><span class="ld" style="background:#c0392b"></span>ถูกยืมอยู่</span>
+    </div>
+  </div>
+  <div id="return-section" style="display:none">
+    <div class="st"><div class="sb"></div>เลือกอุปกรณ์และจำนวนที่ต้องการคืน</div>
+    <div class="eg" id="ret-grid"></div>
+  </div>
+  <div class="st" style="margin-top:.4rem"><div class="sb"></div>ข้อมูลผู้ยืม/คืน</div>
+  <div class="fg2">
+    <div class="fi"><label class="fl">ชื่อ-นามสกุล <span>*</span></label><input class="fn" type="text" id="f-name" placeholder="ชื่อ นามสกุล"/></div>
+    <div class="fi"><label class="fl">รหัสนิสิต <span>*</span></label><input class="fn" type="text" id="f-sid" placeholder="65xxxxxxxx"/></div>
+    <div class="fi"><label class="fl">สาขาวิชา <span>*</span></label><select class="fn" id="f-major"><option value="">-- เลือกสาขา --</option><option>รัฐศาสตร์ภาคปกติ</option><option>รัฐศาสตร์ภาคพิเศษ</option><option>การบริหารทั่วไป</option></select></div>
+    <div class="fi"><label class="fl">ชั้นปี <span>*</span></label><select class="fn" id="f-year"><option value="">-- เลือกชั้นปี --</option><option>ชั้นปีที่ 1</option><option>ชั้นปีที่ 2</option><option>ชั้นปีที่ 3</option><option>ชั้นปีที่ 4</option></select></div>
+    <div class="fi"><label class="fl">เบอร์ติดต่อ <span>*</span></label><input class="fn" type="tel" id="f-tel" placeholder="0xx-xxx-xxxx"/></div>
+    <div class="fi"><label class="fl">อีเมลมหาวิทยาลัย</label><input class="fn" type="email" id="f-email" readonly/></div>
+    <div class="fi"><label class="fl">วันที่ <span>*</span></label><input class="fn" type="date" id="f-date"/></div>
+    <div class="fi"><label class="fl">เวลา <span>*</span></label><input class="fn" type="time" id="f-time"/></div>
+    <div class="fi f2" id="purpose-row"><label class="fl">วัตถุประสงค์</label><input class="fn" type="text" id="f-purpose" placeholder="ระบุวัตถุประสงค์ของการยืม"/></div>
+    <div class="fi f2" id="proof-borrow-row">
+      <label class="fl">รูปบัตรนิสิต <span>*</span></label>
+      <div class="upload-area" id="upload-area-borrow" onclick="document.getElementById('f-proof-borrow').click()">
+        <i class="ti ti-id" style="font-size:28px;color:var(--in);opacity:.7"></i>
+        <div style="font-size:13.5px;font-weight:500;color:var(--in3)">คลิกหรือลากรูปบัตรมาวาง</div>
+        <div style="font-size:12px;color:var(--mu)">JPG, PNG ขนาดไม่เกิน 5MB</div>
+        <input type="file" id="f-proof-borrow" accept="image/*" style="display:none" onchange="previewProofBorrow(event)"/>
+      </div>
+      <div id="proof-preview-borrow" style="display:none;margin-top:8px">
+        <img id="proof-img-borrow" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;border:1.5px solid var(--br)"/>
+        <div id="proof-name-borrow" style="font-size:11px;color:var(--mu);margin-top:4px;text-align:center"></div>
+      </div>
+    </div>
+    <div class="fi f2" id="proof-return-row" style="display:none">
+      <label class="fl">รูปสภาพสิ่งของที่คืน <span>*</span></label>
+      <div class="upload-area" id="upload-area-return" onclick="document.getElementById('f-proof-return').click()">
+        <i class="ti ti-photo-up" style="font-size:28px;color:var(--in);opacity:.7"></i>
+        <div style="font-size:13.5px;font-weight:500;color:var(--in3)">คลิกหรือลากรูปอุปกรณ์มาวาง</div>
+        <div style="font-size:12px;color:var(--mu)">JPG, PNG ขนาดไม่เกิน 5MB</div>
+        <input type="file" id="f-proof-return" accept="image/*" style="display:none" onchange="previewProofReturn(event)"/>
+      </div>
+      <div id="proof-preview-return" style="display:none;margin-top:8px">
+        <img id="proof-img-return" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;border:1.5px solid var(--br)"/>
+        <div id="proof-name-return" style="font-size:11px;color:var(--mu);margin-top:4px;text-align:center"></div>
+      </div>
+    </div>
+  </div>
+  <button class="bs" onclick="doSubmit()"><i class="ti ti-send"></i><span id="btn-label">ส่งคำขอยืมอุปกรณ์</span></button>
+</section>
+
+<section class="pn" id="panel-inv" role="tabpanel">
+  <div class="st"><div class="sb"></div>สถานะคลังอุปกรณ์</div>
+  <div class="ig" id="inv-grid"></div>
+</section>
+
+<section class="pn" id="panel-status" role="tabpanel">
+  <div class="st"><div class="sb"></div>รายการยืม-คืนของฉัน</div>
+  <div class="sw2">
+    <table class="tb">
+      <thead><tr>
+        <th>อุปกรณ์</th>
+        <th>จำนวน</th>
+        <th>วันที่</th>
+        <th>ประเภท</th>
+        <th>สถานะ</th>
+      </tr></thead>
+      <tbody id="status-body">
+        <tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--mu)">ยังไม่มีรายการ</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="pn" id="panel-rules" role="tabpanel">
+  <div class="ri2"><i class="ti ti-shield-check shield"></i><div>กฎ/กติกาการยืม-คืนอุปกรณ์</div></div>
+  <div class="rl">
+    <div class="rr hl"><div class="rn g">1</div><div class="rtx">สามารถยืมอุปกรณ์ได้<strong>ตามระยะเวลาที่กำหนด</strong></div></div>
+    <div class="rr"><div class="rn">2</div><div class="rtx">ห้ามนำอุปกรณ์ไปใช้<strong>นอกสถานที่โดยไม่ได้รับอนุญาต</strong></div></div>
+    <div class="rr"><div class="rn">3</div><div class="rtx"><strong>ผู้ยืมต้องดูแลรักษา</strong>อุปกรณ์ให้เรียบร้อย</div></div>
+    <div class="rr st2"><div class="rn r">4</div><div class="rtx">หากอุปกรณ์ชำรุด<strong>ผู้ยืมต้องชดใช้ค่าซ่อม</strong></div></div>
+    <div class="rr"><div class="rn">5</div><div class="rtx">ห้ามใช้อุปกรณ์<strong>ผิดวัตถุประสงค์</strong></div></div>
+  </div>
+</section>
+
+<footer class="ft"><strong>สโมสรนิสิต คณะรัฐศาสตร์ มหาวิทยาลัยบูรพา</strong></footer>
+</div>
+
+<div id="success-modal">
+  <div class="success-box">
+    <div class="success-icon-wrap" id="success-icon-wrap">
+      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="18" stroke="#1a6b3a" stroke-width="2.5" fill="none"/>
+        <path d="M11 20 L17.5 27 L29 13" stroke="#1a6b3a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray:60;stroke-dashoffset:60;animation:checkDraw .5s ease .3s forwards"/>
+      </svg>
+    </div>
+    <div class="success-title" id="success-title">ส่งคำขอสำเร็จ!</div>
+    <div class="success-msg" id="success-msg"></div>
+    <div class="success-detail" id="success-detail"></div>
+    <button class="success-close-btn" onclick="closeSuccessModal()"><i class="ti ti-check"></i>รับทราบ</button>
+  </div>
+</div>
+
+<script>
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzRs5xE0xGoeCqFUUmJ_ByJQepFO6DFlJXY5qP1zXG8Tfruy7E4uMfsnDZb3zheQg_qXA/exec';
+let currentUser = null, mode = 'borrow', bQ = {}, rQ = {}, EQ = [];
+const EQ_DEFAULT = [
+  {id:'proj', name:'โปรเจกเตอร์', icon:'ti-device-projector', total:3, borrowed:0, borrowCount:0},
+  {id:'mic', name:'ไมโครโฟน', icon:'ti-microphone', total:6, borrowed:0, borrowCount:0},
+  {id:'cam', name:'กล้อง DSLR', icon:'ti-camera', total:2, borrowed:0, borrowCount:0},
+  {id:'spk', name:'ลำโพง', icon:'ti-speakerphone', total:4, borrowed:0, borrowCount:0}
+];
+
+function doLogin(){
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const errEl = document.getElementById('login-err');
+  if(!email || !email.endsWith('@go.buu.ac.th')){
+    errEl.textContent = 'อนุญาตเฉพาะอีเมล @go.buu.ac.th';
+    errEl.classList.add('sh');
+    return;
+  }
+  currentUser = {email, studentId: email.split('@')[0]};
+  try{localStorage.setItem('buu_user', JSON.stringify(currentUser));}catch(_){}
+  document.getElementById('login-overlay').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  document.getElementById('user-email-display').textContent = email;
+  document.getElementById('f-email').value = email;
+  document.getElementById('f-sid').value = currentUser.studentId;
+  loadEQ().then(()=>{rGrid('eq-grid',bQ,false);rGrid('ret-grid',rQ,true);rInv();});
+}
+
+function doLogout(){
+  currentUser = null;
+  try{localStorage.removeItem('buu_user');}catch(_){}
+  document.getElementById('login-overlay').style.display = 'flex';
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('login-email').value = '';
+}
+
+document.getElementById('login-email').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+try{
+  const saved = localStorage.getItem('buu_user');
+  if(saved){
+    currentUser = JSON.parse(saved);
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    document.getElementById('user-email-display').textContent = currentUser.email;
+    document.getElementById('f-email').value = currentUser.email;
+    document.getElementById('f-sid').value = currentUser.studentId;
+    loadEQ().then(()=>{rGrid('eq-grid',bQ,false);rGrid('ret-grid',rQ,true);rInv();});
+  }
+}catch(_){}
+
+async function loadEQ(){
+  try{
+    const res = await fetch(SHEET_URL+'?action=getEquipment');
+    const data = await res.json();
+    EQ = (data.equipment && data.equipment.length) ? data.equipment : EQ_DEFAULT;
+  }catch(e){
+    EQ = EQ_DEFAULT;
+  }
+}
+
+function av(e){return e.total - e.borrowed;}
+function dc(e){const a=av(e);return a===0?'db':a<e.total?'dw':'dok';}
+function rGrid(gid,qo,isR){
+  const g=document.getElementById(gid);
+  if(!g)return;
+  g.innerHTML='';
+  EQ.forEach(e=>{
+    const a = isR ? e.borrowed : av(e);
+    if(!qo[e.id])qo[e.id]=0;
+    const c=document.createElement('div');
+    c.className='ec'+(qo[e.id]>0?' sl':'');
+    c.id=(isR?'ret-':'eq-')+e.id;
+    c.innerHTML=`<div class="sd ${dc(e)}"></div><i class="ti ${e.icon} ei"></i><div style="font-size:13px;font-weight:500">${e.name}</div><div class="av">${isR?'กำลังยืม':'คงเหลือ'}: ${a} ชิ้น</div><div class="qr"><button class="qb" onclick="cQ('${e.id}',${isR?1:0},-1)">−</button><span class="qn" id="${isR?'rq':'bq'}-${e.id}">${qo[e.id]}</span><button class="qb" onclick="cQ('${e.id}',${isR?1:0},1)">+</button></div>`;
+    if(a===0){c.style.opacity='.5';c.style.pointerEvents='none';}
+    g.appendChild(c);
+  });
+}
+
+function cQ(id,isR,d){
+  const o=isR?rQ:bQ;
+  const e=EQ.find(x=>x.id===id);
+  const mx=isR?e.borrowed:av(e);
+  o[id]=Math.max(0,Math.min(mx,(o[id]||0)+d));
+  document.getElementById((isR?'rq-':'bq-')+id).textContent=o[id];
+}
+
+function rInv(){
+  const g=document.getElementById('inv-grid');
+  if(!g)return;
+  g.innerHTML='';
+  EQ.forEach(e=>{
+    const a=av(e);
+    const pct=Math.round(a/e.total*100);
+    g.innerHTML+=`<div class="ic"><div class="ii"><i class="ti ${e.icon}"></i></div><div class="in2">${e.name}</div><div style="display:flex;align-items:baseline;gap:5px"><span class="ibg">${a}</span><span class="ism">/ ${e.total}</span></div><div class="ism">ถูกยืม: ${e.borrowed}</div><div class="ibw"><div class="ibf" style="width:${pct}%"></div></div></div>`;
+  });
+}
+
+function setMode(m){
+  mode=m;
+  document.getElementById('btn-borrow').className='mb'+(m==='borrow'?' on':'');
+  document.getElementById('btn-return').className='mb'+(m==='return'?' on':'');
+  document.getElementById('borrow-section').style.display=m==='borrow'?'block':'none';
+  document.getElementById('return-section').style.display=m==='return'?'block':'none';
+  document.getElementById('purpose-row').style.display=m==='borrow'?'flex':'none';
+  document.getElementById('proof-borrow-row').style.display=m==='borrow'?'':'none';
+  document.getElementById('proof-return-row').style.display=m==='return'?'':'none';
+  document.getElementById('btn-label').textContent=m==='borrow'?'ส่งคำขอยืมอุปกรณ์':'ยืนยันการคืน';
+}
+
+function sw(tab){
+  document.querySelectorAll('.nt').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.pn').forEach(p=>p.classList.remove('on'));
+  const tabs=['borrow','inv','status','rules'];
+  const i=tabs.indexOf(tab);
+  document.querySelectorAll('.nt')[i].classList.add('on');
+  document.getElementById('panel-'+tab).classList.add('on');
+}
+
+function toggleConfirmBtn(){
+  document.getElementById('confirm-ok-btn').disabled = !document.getElementById('agree-check').checked;
+}
+
+function closeConfirm(){
+  document.getElementById('confirm-modal').classList.remove('sh');
+  document.getElementById('agree-check').checked = false;
+}
+
+let pendingPayload = null;
+
+async function doSubmit(){
+  const nm=document.getElementById('f-name').value.trim();
+  const sid=document.getElementById('f-sid').value.trim();
+  const mj=document.getElementById('f-major').value;
+  const yr=document.getElementById('f-year').value;
+  if(!nm||!sid||!mj||!yr){alert('กรุณากรอกข้อมูลให้ครบ');return;}
+  
+  const proofId = mode==='borrow'?'f-proof-borrow':'f-proof-return';
+  const proof=document.getElementById(proofId);
+  if(!proof.files||!proof.files.length){alert('กรุณาแนบรูป');return;}
+  
+  const q=mode==='borrow'?bQ:rQ;
+  const items=EQ.filter(e=>(q[e.id]||0)>0);
+  if(!items.length){alert('กรุณาเลือกอุปกรณ์');return;}
+
+  const payload={
+    'ชื่อ':nm,'รหัส':sid,'สาขา':mj,'ชั้นปี':yr,
+    'อุปกรณ์':items.map(e=>e.name).join(','),
+    'จำนวน':items.map(e=>q[e.id]).join(','),
+    'ประเภท':mode==='borrow'?'ยืม':'คืน',
+    'สถานะ':'รอการอนุมัติ'
+  };
+
+  if(mode==='borrow'){
+    pendingPayload={payload,items,q};
+    document.getElementById('confirm-modal').classList.add('sh');
+  }else{
+    pendingPayload={payload,items,q};
+    proceedSubmit();
+  }
+}
+
+async function proceedSubmit(){
+  if(!pendingPayload)return;
+  closeConfirm();
+  const {payload,items,q}=pendingPayload;
+  pendingPayload=null;
+  
+  showSuccessModal(mode==='borrow',payload);
+  document.querySelectorAll('.fn:not([readonly])').forEach(el=>el.value='');
+  bQ={};rQ={};
+}
+
+function showSuccessModal(isBorrow,payload){
+  const title=document.getElementById('success-title');
+  const msg=document.getElementById('success-msg');
+  if(isBorrow){
+    title.textContent='ส่งคำขอสำเร็จ!';
+    msg.textContent='ระบบได้รับคำขอของคุณ กรุณารอการอนุมัติ';
+  }else{
+    title.textContent='บันทึกการคืนสำเร็จ!';
+    msg.textContent='ขอบคุณที่ดูแลรักษาอุปกรณ์';
+  }
+  document.getElementById('success-modal').classList.add('sh');
+}
+
+function closeSuccessModal(){
+  document.getElementById('success-modal').classList.remove('sh');
+}
+
+function previewProofBorrow(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    document.getElementById('proof-img-borrow').src=ev.target.result;
+    document.getElementById('proof-name-borrow').textContent=file.name;
+    document.getElementById('proof-preview-borrow').style.display='block';
+    document.getElementById('upload-area-borrow').style.display='none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearProofBorrow(){
+  document.getElementById('f-proof-borrow').value='';
+  document.getElementById('proof-preview-borrow').style.display='none';
+  document.getElementById('upload-area-borrow').style.display='flex';
+}
+
+function previewProofReturn(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    document.getElementById('proof-img-return').src=ev.target.result;
+    document.getElementById('proof-name-return').textContent=file.name;
+    document.getElementById('proof-preview-return').style.display='block';
+    document.getElementById('upload-area-return').style.display='none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearProofReturn(){
+  document.getElementById('f-proof-return').value='';
+  document.getElementById('proof-preview-return').style.display='none';
+  document.getElementById('upload-area-return').style.display='flex';
+}
+</script>
+</body>
+</html>
