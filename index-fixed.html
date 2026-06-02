@@ -152,6 +152,13 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
 .ld{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
 .upload-area{border:1.5px dashed var(--br);border-radius:10px;background:var(--wh);padding:18px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all .2s}
 .upload-area:hover{border-color:var(--in);background:var(--ib)}
+.proof-preview-wrapper{position:relative;margin-top:8px;display:none}
+.proof-preview-wrapper.show{display:block}
+.proof-img{width:100%;max-height:280px;object-fit:cover;border-radius:8px;border:1.5px solid var(--br);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.proof-actions{display:flex;gap:8px;margin-top:8px}
+.proof-clear-btn{padding:6px 12px;background:#fdeaea;color:#c0392b;border:1px solid rgba(192,57,43,.2);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif;flex:1}
+.proof-clear-btn:hover{background:#c0392b;color:#fff}
+.proof-name{font-size:11px;color:var(--mu);margin-top:4px;text-align:center;word-break:break-word}
 @keyframes successPop{0%{opacity:0;transform:scale(.85) translateY(20px)}100%{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes checkDraw{0%{stroke-dashoffset:60}100%{stroke-dashoffset:0}}
 @keyframes circlePulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
@@ -195,6 +202,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
   .mb{padding:9px}
   .bs{font-size:14px;padding:11px}
   .ri2{flex-direction:column;gap:8px}
+  .proof-img{max-height:200px}
 }
 @media(min-width:601px) and (max-width:860px){
   .w{padding-left:1rem;padding-right:1rem}
@@ -290,30 +298,38 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg)}
     <div class="fi"><label class="fl">วันที่ <span>*</span></label><input class="fn" type="date" id="f-date"/></div>
     <div class="fi"><label class="fl">เวลา <span>*</span></label><input class="fn" type="time" id="f-time"/></div>
     <div class="fi f2" id="purpose-row"><label class="fl">วัตถุประสงค์</label><input class="fn" type="text" id="f-purpose" placeholder="ระบุวัตถุประสงค์ของการยืม"/></div>
+    
     <div class="fi f2" id="proof-borrow-row">
-      <label class="fl">รูปบัตรนิสิต <span>*</span></label>
+      <label class="fl">รูปบัตรนิสิต <span>*</span> <span style="color:var(--mu);font-weight:400;font-size:12px">(ถ่ายให้เห็นหน้าบัตรชัด)</span></label>
       <div class="upload-area" id="upload-area-borrow" onclick="document.getElementById('f-proof-borrow').click()">
         <i class="ti ti-id" style="font-size:28px;color:var(--in);opacity:.7"></i>
-        <div style="font-size:13.5px;font-weight:500;color:var(--in3)">คลิกหรือลากรูปบัตรมาวาง</div>
+        <div style="font-size:13.5px;font-weight:500;color:var(--in3)">คลิกเพื่ออัพโหลดรูปบัตร</div>
         <div style="font-size:12px;color:var(--mu)">JPG, PNG ขนาดไม่เกิน 5MB</div>
         <input type="file" id="f-proof-borrow" accept="image/*" style="display:none" onchange="previewProofBorrow(event)"/>
       </div>
-      <div id="proof-preview-borrow" style="display:none;margin-top:8px">
-        <img id="proof-img-borrow" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;border:1.5px solid var(--br)"/>
-        <div id="proof-name-borrow" style="font-size:11px;color:var(--mu);margin-top:4px;text-align:center"></div>
+      <div id="proof-preview-borrow" class="proof-preview-wrapper">
+        <img id="proof-img-borrow" class="proof-img" src="" alt="บัตรนิสิต"/>
+        <div class="proof-actions">
+          <button type="button" class="proof-clear-btn" onclick="clearProofBorrow()"><i class="ti ti-trash" style="margin-right:4px"></i>ลบรูป</button>
+        </div>
+        <div id="proof-name-borrow" class="proof-name"></div>
       </div>
     </div>
+    
     <div class="fi f2" id="proof-return-row" style="display:none">
-      <label class="fl">รูปสภาพสิ่งของที่คืน <span>*</span></label>
+      <label class="fl">รูปสภาพสิ่งของที่คืน <span>*</span> <span style="color:var(--mu);font-weight:400;font-size:12px">(ถ่ายให้เห็นสภาพทั้งตัวเครื่อง)</span></label>
       <div class="upload-area" id="upload-area-return" onclick="document.getElementById('f-proof-return').click()">
         <i class="ti ti-photo-up" style="font-size:28px;color:var(--in);opacity:.7"></i>
-        <div style="font-size:13.5px;font-weight:500;color:var(--in3)">คลิกหรือลากรูปอุปกรณ์มาวาง</div>
+        <div style="font-size:13.5px;font-weight:500;color:var(--in3)">คลิกเพื่ออัพโหลดรูปอุปกรณ์</div>
         <div style="font-size:12px;color:var(--mu)">JPG, PNG ขนาดไม่เกิน 5MB</div>
         <input type="file" id="f-proof-return" accept="image/*" style="display:none" onchange="previewProofReturn(event)"/>
       </div>
-      <div id="proof-preview-return" style="display:none;margin-top:8px">
-        <img id="proof-img-return" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;border:1.5px solid var(--br)"/>
-        <div id="proof-name-return" style="font-size:11px;color:var(--mu);margin-top:4px;text-align:center"></div>
+      <div id="proof-preview-return" class="proof-preview-wrapper">
+        <img id="proof-img-return" class="proof-img" src="" alt="หลักฐานคืน"/>
+        <div class="proof-actions">
+          <button type="button" class="proof-clear-btn" onclick="clearProofReturn()"><i class="ti ti-trash" style="margin-right:4px"></i>ลบรูป</button>
+        </div>
+        <div id="proof-name-return" class="proof-name"></div>
       </div>
     </div>
   </div>
@@ -568,8 +584,8 @@ function previewProofBorrow(e){
   const reader=new FileReader();
   reader.onload=ev=>{
     document.getElementById('proof-img-borrow').src=ev.target.result;
-    document.getElementById('proof-name-borrow').textContent=file.name;
-    document.getElementById('proof-preview-borrow').style.display='block';
+    document.getElementById('proof-name-borrow').textContent='ไฟล์: '+file.name;
+    document.getElementById('proof-preview-borrow').classList.add('show');
     document.getElementById('upload-area-borrow').style.display='none';
   };
   reader.readAsDataURL(file);
@@ -577,7 +593,7 @@ function previewProofBorrow(e){
 
 function clearProofBorrow(){
   document.getElementById('f-proof-borrow').value='';
-  document.getElementById('proof-preview-borrow').style.display='none';
+  document.getElementById('proof-preview-borrow').classList.remove('show');
   document.getElementById('upload-area-borrow').style.display='flex';
 }
 
@@ -587,8 +603,8 @@ function previewProofReturn(e){
   const reader=new FileReader();
   reader.onload=ev=>{
     document.getElementById('proof-img-return').src=ev.target.result;
-    document.getElementById('proof-name-return').textContent=file.name;
-    document.getElementById('proof-preview-return').style.display='block';
+    document.getElementById('proof-name-return').textContent='ไฟล์: '+file.name;
+    document.getElementById('proof-preview-return').classList.add('show');
     document.getElementById('upload-area-return').style.display='none';
   };
   reader.readAsDataURL(file);
@@ -596,7 +612,7 @@ function previewProofReturn(e){
 
 function clearProofReturn(){
   document.getElementById('f-proof-return').value='';
-  document.getElementById('proof-preview-return').style.display='none';
+  document.getElementById('proof-preview-return').classList.remove('show');
   document.getElementById('upload-area-return').style.display='flex';
 }
 </script>
